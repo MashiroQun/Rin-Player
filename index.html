@@ -4,21 +4,29 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Rin☪︎ Player</title>
+    
     <link rel="icon" href="./character.png" type="image/png">
     <link rel="apple-touch-icon" href="./character.png">
     <link rel="manifest" href="manifest.json">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { background: #000; color: #fff; overflow: hidden; }
-        input[type="range"]::-webkit-slider-runnable-track { background: rgba(255,255,255,0.2); border-radius: 4px; height: 4px; }
-        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; background: #fff; width: 12px; height: 12px; border-radius: 50%; margin-top: -4px; }
+        /* アプリ全体の背景色と基本設定 */
+        body { background: #5974FA; color: #fff; overflow: hidden; }
         
-        /* 発光エフェクト (コントロール用) */
-        .glow-active { color: #22d3ee !important; filter: drop-shadow(0 0 8px rgba(34, 211, 238, 0.9)); }
+        /* iPhoneの上のバー（ステータスバー）と重ならないようにする余白 */
+        .safe-top { padding-top: max(1rem, env(safe-area-inset-top)); }
         
-        /* スプラッシュ画面用アニメーション */
+        /* 画面下のホームバーと被らないための余白 */
+        .safe-bottom { padding-bottom: max(1rem, env(safe-area-inset-bottom)); }
+
+        input[type="range"]::-webkit-slider-runnable-track { background: rgba(255,255,255,0.3); border-radius: 4px; height: 4px; }
+        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; background: #fff; width: 14px; height: 14px; border-radius: 50%; margin-top: -5px; box-shadow: 0 0 10px rgba(255,255,255,0.5); }
+        
+        /* 発光エフェクト (コントロール用: 白く強く光るように変更) */
+        .glow-active { color: #ffffff !important; filter: drop-shadow(0 0 12px rgba(255, 255, 255, 1)); }
+        
         @keyframes float {
             0%, 100% { transform: translateY(0px); }
             50% { transform: translateY(-15px); }
@@ -29,79 +37,63 @@
 </head>
 <body class="flex flex-col h-screen font-sans">
 
-    <!-- =========================================
-         ゲーム風 起動スプラッシュスクリーン
-    ========================================== -->
-    <div id="splash-screen" class="fixed inset-0 z-[9999] bg-black flex flex-col items-center justify-center transition-all" onclick="startApp()">
-        <!-- 背景の装飾（うっすらとしたグラデーション） -->
-        <div class="absolute inset-0 bg-gradient-to-b from-indigo-900/20 to-black pointer-events-none"></div>
+    <!-- スプラッシュスクリーン -->
+    <div id="splash-screen" class="fixed inset-0 z-[9999] bg-[#5974FA] flex flex-col items-center justify-center transition-all" onclick="startApp()">
+        <div class="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent pointer-events-none"></div>
 
-        <!-- キャラクター画像エリア (画像がない場合は光る円になります) -->
         <div class="relative w-48 h-48 mb-8 animate-float">
-            <!-- ↓ 画像ファイル名が違う場合はここを変更してください ↓ -->
             <img src="./character.png" alt="Character" 
-                 class="w-full h-full object-cover rounded-full shadow-[0_0_40px_rgba(99,102,241,0.6)] relative z-10"
+                 class="w-full h-full object-cover rounded-full shadow-[0_0_40px_rgba(255,255,255,0.5)] relative z-10"
                  onerror="this.style.display='none'; document.getElementById('fallback-circle').style.display='block';">
-            
-            <!-- 画像がない場合のフォールバック（光るリング） -->
-            <div id="fallback-circle" class="hidden absolute inset-0 rounded-full border-2 border-indigo-500 shadow-[0_0_40px_rgba(99,102,241,0.6)]"></div>
+            <div id="fallback-circle" class="hidden absolute inset-0 rounded-full border-2 border-white shadow-[0_0_40px_rgba(255,255,255,0.5)]"></div>
         </div>
 
-        <!-- タイトルロゴ -->
         <h1 class="text-4xl font-black tracking-[0.4em] text-white mb-2 text-center ml-3 z-10 drop-shadow-lg">RIN☪︎</h1>
-        <p class="text-cyan-400 font-bold tracking-[0.4em] text-xs z-10 mb-24">MUSIC PLAYER</p>
+        <p class="text-white/80 font-bold tracking-[0.4em] text-xs z-10 mb-24">MUSIC PLAYER</p>
 
-        <!-- Tap to Start -->
-        <div class="absolute bottom-24 animate-pulse text-slate-400 text-sm font-bold tracking-[0.3em] z-10">
+        <div class="absolute bottom-24 animate-pulse text-white/70 text-sm font-bold tracking-[0.3em] z-10">
             - TAP TO START -
         </div>
     </div>
 
 
-    <!-- =========================================
-         メインプレイヤー画面 (前回のレイアウト維持)
-    ========================================== -->
-    <div class="w-full bg-black pt-4 pb-2 z-20 flex-shrink-0">
-        <!-- ヘッダー -->
+    <!-- プレイヤー固定エリア (safe-top で上のバーと被らないように) -->
+    <div class="w-full safe-top pb-2 z-20 flex-shrink-0">
         <div class="flex justify-between items-center mb-4 px-6">
-            <div class="text-[10px] font-bold tracking-[0.3em] text-indigo-400">RIN☪︎ OFFICIAL PLAYER</div>
-            <div id="update-badge" class="text-[8px] bg-white/10 px-2 py-1 rounded text-slate-400">UPDATING...</div>
+            <div class="text-[10px] font-bold tracking-[0.3em] text-white/90">RIN☪︎ OFFICIAL PLAYER</div>
+            <div id="update-badge" class="text-[8px] bg-white/20 px-2 py-1 rounded text-white font-bold">UPDATING...</div>
         </div>
         
-        <!-- プレイヤー -->
         <div class="w-full px-4 mb-4">
-            <div class="w-full aspect-video rounded-2xl overflow-hidden bg-zinc-900 shadow-2xl border border-white/10">
+            <!-- 動画エリア: YouTubeの黒枠が目立たないよう背景を少し暗く -->
+            <div class="w-full aspect-video rounded-2xl overflow-hidden bg-black/40 shadow-2xl border border-white/20">
                 <div id="player"></div>
             </div>
         </div>
 
-        <!-- タイトル -->
         <div class="px-6 mb-4">
-            <h1 id="video-title" class="text-lg font-bold truncate leading-tight">Loading Rin☪︎ contents...</h1>
+            <h1 id="video-title" class="text-lg font-bold truncate leading-tight drop-shadow-md">Loading Rin☪︎ contents...</h1>
         </div>
 
-        <!-- シークバーと時間 -->
         <div class="px-6 mb-4">
-            <div class="flex justify-between text-[10px] text-slate-400 font-mono mb-1.5 px-1">
+            <div class="flex justify-between text-[10px] text-white/80 font-mono mb-1.5 px-1 font-bold">
                 <span id="current-time">0:00</span>
                 <span id="duration-total">0:00</span>
             </div>
             <input type="range" id="seek-bar" value="0" step="0.1" class="w-full appearance-none bg-transparent">
         </div>
 
-        <!-- モダンSVGコントロール -->
+        <!-- コントロール (非アクティブ時は半透明の白、アクティブ時は強発光) -->
         <div class="flex justify-between items-center px-8 mb-2">
-            <!-- シャッフル -->
-            <button onclick="toggleShuffle()" id="btn-shuffle" class="text-white/30 transition-all duration-300">
+            <button onclick="toggleShuffle()" id="btn-shuffle" class="text-white/40 transition-all duration-300">
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/></svg>
             </button>
 
-            <!-- メイン操作 -->
             <div class="flex items-center gap-8">
                 <button onclick="prevVideo()" class="text-white active:scale-90 transition">
                     <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
                 </button>
-                <button onclick="togglePlay()" id="play-pause-btn" class="w-16 h-16 bg-white text-black rounded-full flex items-center justify-center active:scale-95 transition">
+                <button onclick="togglePlay()" id="play-pause-btn" class="w-16 h-16 bg-white text-[#5974FA] rounded-full flex items-center justify-center active:scale-95 transition shadow-lg">
                     <svg id="icon-play" width="32" height="32" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
                     <svg id="icon-pause" class="hidden" width="32" height="32" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
                 </button>
@@ -110,38 +102,39 @@
                 </button>
             </div>
 
-            <!-- リピート -->
-            <button onclick="toggleRepeat()" id="btn-repeat" class="text-white/30 transition-all duration-300 relative">
+            <button onclick="toggleRepeat()" id="btn-repeat" class="text-white/40 transition-all duration-300 relative">
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 1l4 4-4 4M3 11V9a4 4 0 014-4h14M7 23l-4-4 4-4M21 13v2a4 4 0 01-4 4H3"/></svg>
-                <!-- 1曲リピートバッジ -->
-                <span id="repeat-1-indicator" class="hidden absolute -top-2 -right-2 text-[9px] font-black bg-pink-500 text-white rounded-full w-4 h-4 flex items-center justify-center">1</span>
+                <span id="repeat-1-indicator" class="hidden absolute -top-2 -right-2 text-[9px] font-black bg-white text-[#5974FA] rounded-full w-4 h-4 flex items-center justify-center shadow-md">1</span>
             </button>
         </div>
     </div>
 
-    <!-- リストエリア -->
-    <div class="flex-1 overflow-y-auto px-4 pb-12" id="playlist-container">
+    <!-- リストエリア (スクロール可能) -->
+    <div class="flex-1 overflow-y-auto px-4" id="playlist-container">
         <!-- JSで生成 -->
     </div>
+
+    <!-- 下部の固定余白 (ここでリストの高さを押し上げ、さらにiPhoneのホームバーを避けます) -->
+    <div class="w-full h-8 safe-bottom flex-shrink-0"></div>
+
 
     <!-- API設定モーダル -->
     <div id="setup-modal" class="fixed inset-0 z-[10000] bg-black/95 flex items-center justify-center p-8 hidden">
         <div class="w-full max-w-sm space-y-6">
             <h2 class="text-2xl font-bold">API Setup</h2>
-            <input id="api-key-input" type="password" placeholder="YouTube API Key" class="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-4 text-white">
-            <button onclick="saveApiKey()" class="w-full bg-indigo-600 py-4 rounded-xl font-bold">Save Key</button>
+            <input id="api-key-input" type="password" placeholder="YouTube API Key" class="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-4 text-white outline-none">
+            <button onclick="saveApiKey()" class="w-full bg-[#5974FA] py-4 rounded-xl font-bold">Save Key</button>
         </div>
     </div>
 
     <script>
         let player, playlist =[], currentIndex = 0;
-        let isShuffle = false, repeatMode = 0; // 0:なし, 1:全曲, 2:1曲
+        let isShuffle = false, repeatMode = 0; 
         const TARGET_HANDLE = '@r_____in__';
         const UPDATE_INTERVAL = 24 * 60 * 60 * 1000;
-        const CACHE_KEY = 'video_cache_v5'; 
-        let appStarted = false; // タップされたかどうかのフラグ
+        const CACHE_KEY = 'video_cache_v6'; 
+        let appStarted = false;
 
-        // 1. YouTube API読み込み
         const tag = document.createElement('script');
         tag.src = "https://www.youtube.com/iframe_api";
         document.head.appendChild(tag);
@@ -154,17 +147,14 @@
             });
         }
 
-        // 2. スタート画面がタップされた時の処理
         async function startApp() {
             if(appStarted) return;
             appStarted = true;
 
-            // スプラッシュ画面をフェードアウト
             const splash = document.getElementById('splash-screen');
             splash.classList.add('splash-fade-out');
             setTimeout(() => { splash.style.display = 'none'; }, 600);
 
-            // iOSの制限解除（ユーザーアクションを伴うこの瞬間に実行）
             if ('wakeLock' in navigator) await navigator.wakeLock.request('screen').catch(()=>{});
 
             const apiKey = localStorage.getItem('yt_api_key');
@@ -184,7 +174,7 @@
                 playlist = JSON.parse(cachedData);
                 document.getElementById('update-badge').innerText = "LIST: CACHED";
                 renderPlaylist();
-                if(playlist.length > 0) playAt(0, true); // タップ直後なので自動再生も可能になります
+                if(playlist.length > 0) playAt(0, true);
             } else {
                 await fetchFullPlaylist();
             }
@@ -224,19 +214,18 @@
                 document.getElementById('update-badge').innerText = "LIST: UPDATED";
                 renderPlaylist();
                 if(playlist.length > 0) playAt(0, true);
-            } catch (e) { alert("API Error"); }
+            } catch (e) { alert("API Error. Please check your key."); }
         }
-
-        // --- 以下、コントロールとUI処理 (前回のまま) ---
 
         function renderPlaylist() {
             const container = document.getElementById('playlist-container');
+            // 画像(w-28)とパディング(p-3)を少し大きくして、画面にちょうど4つ分入るように調整
             container.innerHTML = playlist.map((item, i) => `
-                <div onclick="playAt(${i})" class="flex items-center gap-4 mb-4 mt-2 p-2 rounded-xl active:scale-[0.98] transition-all cursor-pointer ${i === currentIndex ? 'bg-white/10' : 'opacity-70'}">
-                    <img src="${item.thumb}" class="w-24 aspect-video object-cover rounded-lg shadow-lg">
+                <div onclick="playAt(${i})" class="flex items-center gap-4 mb-3 p-3 rounded-2xl active:scale-[0.98] transition-all cursor-pointer ${i === currentIndex ? 'bg-white/30 border border-white/20 shadow-lg' : 'bg-white/10 border border-transparent'}">
+                    <img src="${item.thumb}" class="w-28 aspect-video object-cover rounded-lg shadow-md">
                     <div class="flex-1 min-w-0">
-                        <div class="text-sm font-bold truncate ${i === currentIndex ? 'text-cyan-400' : 'text-white'}">${item.title}</div>
-                        <div class="text-[10px] text-slate-400 mt-1 font-bold uppercase tracking-widest">
+                        <div class="text-[15px] font-bold truncate ${i === currentIndex ? 'text-white' : 'text-white/90'}">${item.title}</div>
+                        <div class="text-[10px] text-white/70 mt-1 font-bold uppercase tracking-widest">
                             Track ${i+1} <span class="mx-1">•</span> ${item.duration}
                         </div>
                     </div>
@@ -245,7 +234,7 @@
         }
 
         function playAt(index, autoPlay = true) {
-            if(!player || !player.loadVideoById) return; // YouTube API準備前ガード
+            if(!player || !player.loadVideoById) return; 
             currentIndex = index;
             const video = playlist[currentIndex];
             document.getElementById('video-title').innerText = video.title;
@@ -278,7 +267,7 @@
         function toggleShuffle() {
             isShuffle = !isShuffle;
             const btn = document.getElementById('btn-shuffle');
-            isShuffle ? btn.classList.replace('text-white/30', 'glow-active') : btn.classList.replace('glow-active', 'text-white/30');
+            isShuffle ? btn.classList.replace('text-white/40', 'glow-active') : btn.classList.replace('glow-active', 'text-white/40');
         }
 
         function toggleRepeat() {
@@ -287,13 +276,13 @@
             const ind = document.getElementById('repeat-1-indicator');
             
             btn.classList.remove('glow-active');
-            btn.classList.add('text-white/30');
+            btn.classList.add('text-white/40');
             ind.classList.add('hidden');
 
             if (repeatMode === 1) {
-                btn.classList.replace('text-white/30', 'glow-active');
+                btn.classList.replace('text-white/40', 'glow-active');
             } else if (repeatMode === 2) {
-                btn.classList.replace('text-white/30', 'glow-active');
+                btn.classList.replace('text-white/40', 'glow-active');
                 ind.classList.remove('hidden');
             }
         }
