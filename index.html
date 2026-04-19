@@ -3,141 +3,151 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Rin☪︎ Player</title>
+    <title>Rin☪︎ Music Player</title>
     
-    <link rel="icon" href="./character.png" type="image/png">
-    <link rel="apple-touch-icon" href="./character.png">
+    <link rel="icon" href="./User-icon.png" type="image/png">
+    <link rel="apple-touch-icon" href="./User-icon.png">
     <link rel="manifest" href="manifest.json">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* ★ アプリ全体の背景色 (前回の #5974FA より少し暗く落ち着いたディープブルー) */
         :root {
             --app-bg: #2C3D85; 
         }
 
-        body { background: var(--app-bg); color: #fff; overflow: hidden; }
+        /* 明朝体（セリフ体）の設定 */
+        .font-serif-custom {
+            font-family: "Hiragino Mincho ProN", "Yu Mincho", "MS PMincho", serif;
+        }
+
+        body { 
+            background: var(--app-bg); 
+            color: #fff; 
+            overflow: hidden; 
+            margin: 0;
+        }
         
-        /* iPhoneのセーフエリア（上下のバーを避ける） */
         .safe-top { padding-top: max(1rem, env(safe-area-inset-top)); }
         .safe-bottom { padding-bottom: max(1rem, env(safe-area-inset-bottom)); }
 
-        /* シークバーのデザイン */
+        /* シークバー */
         input[type="range"]::-webkit-slider-runnable-track { background: rgba(255,255,255,0.3); border-radius: 4px; height: 4px; }
-        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; background: #fff; width: 14px; height: 14px; border-radius: 50%; margin-top: -5px; box-shadow: 0 0 10px rgba(255,255,255,0.5); }
-        
-        /* 発光エフェクト */
-        .glow-active { color: #ffffff !important; filter: drop-shadow(0 0 12px rgba(255, 255, 255, 1)); }
+        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; background: #fff; width: 14px; height: 14px; border-radius: 50%; margin-top: -5px; }
         
         /* アニメーション */
         @keyframes float {
             0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-15px); }
+            50% { transform: translateY(-10px); }
         }
         .animate-float { animation: float 4s ease-in-out infinite; }
         .splash-fade-out { opacity: 0; pointer-events: none; transform: scale(1.05); transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
+
+        .hidden { display: none !important; }
     </style>
 </head>
 <body class="flex flex-col h-screen font-sans">
 
-    <!-- スプラッシュスクリーン -->
     <div id="splash-screen" class="fixed inset-0 z-[9999] flex flex-col items-center justify-center transition-all" style="background: var(--app-bg);" onclick="startApp()">
-        <div class="absolute inset-0 bg-gradient-to-b from-white/10 to-black/20 pointer-events-none"></div>
-
-        <div class="relative w-48 h-48 mb-8 animate-float">
-            <img src="./character.png" alt="Character" 
-                 class="w-full h-full object-cover rounded-full shadow-[0_0_50px_rgba(255,255,255,0.4)] relative z-10"
-                 onerror="this.style.display='none'; document.getElementById('fallback-circle').style.display='block';">
-            <div id="fallback-circle" class="hidden absolute inset-0 rounded-full border-2 border-white shadow-[0_0_50px_rgba(255,255,255,0.4)]"></div>
+        <div class="relative w-40 h-40 mb-12 animate-float">
+            <img src="./User-icon.png" alt="Icon" class="w-full h-full object-cover rounded-full shadow-2xl border-2 border-white/20">
         </div>
-
-        <h1 class="text-4xl font-black tracking-[0.4em] text-white mb-2 text-center ml-3 z-10 drop-shadow-lg">RIN☪︎</h1>
-        <p class="text-white/80 font-bold tracking-[0.4em] text-xs z-10 mb-24">MUSIC PLAYER</p>
-
-        <div class="absolute bottom-24 animate-pulse text-white/70 text-sm font-bold tracking-[0.3em] z-10">
+        <h1 class="text-3xl font-serif-custom tracking-[0.1em] text-white mb-4 text-center z-10 drop-shadow-lg">Rin☪︎ Music Player</h1>
+        <div class="absolute bottom-24 animate-pulse text-white/70 text-sm font-serif-custom tracking-[0.2em] z-10">
             - TAP TO START -
         </div>
     </div>
 
-
-    <!-- プレイヤー固定エリア -->
-    <div class="w-full safe-top pb-2 z-20 flex-shrink-0">
-        <div class="flex justify-between items-center mb-4 px-6">
-            <div class="text-[10px] font-bold tracking-[0.3em] text-white/90">RIN☪︎ OFFICIAL PLAYER</div>
-            <div id="update-badge" class="text-[8px] bg-white/20 px-2 py-1 rounded text-white font-bold">UPDATING...</div>
-        </div>
+    <main class="flex-1 overflow-hidden relative">
         
-        <div class="w-full px-4 mb-4">
-            <div class="w-full aspect-video rounded-2xl overflow-hidden bg-black/50 shadow-2xl border border-white/20 relative">
-                <div id="player" class="absolute inset-0"></div>
+        <section id="view-player" class="h-full flex flex-col">
+            <div class="w-full flex-shrink-0 z-20">
+                <div class="w-full safe-top pb-12 relative bg-black/10">
+                    <div class="pt-6 text-center">
+                        <h1 class="text-2xl font-serif-custom tracking-[0.1em] text-white drop-shadow-lg">Rin☪︎ Music Player</h1>
+                    </div>
+                    <div class="absolute -bottom-10 left-1/2 -translate-x-1/2">
+                        <div class="relative w-20 h-20">
+                            <img src="./User-icon.png" class="w-full h-full object-cover rounded-full border-4 shadow-2xl" style="border-color: var(--app-bg);">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-12 px-4 mb-4">
+                    <div class="w-full aspect-video rounded-2xl overflow-hidden bg-black/50 shadow-2xl border border-white/10 relative">
+                        <div id="player" class="absolute inset-0"></div>
+                    </div>
+                </div>
+
+                <div class="px-6 mb-4">
+                    <div class="flex justify-between text-[10px] text-white/80 font-mono mb-1.5 px-1 font-bold">
+                        <span id="current-time">0:00</span>
+                        <span id="duration-total">0:00</span>
+                    </div>
+                    <input type="range" id="seek-bar" value="0" step="0.1" class="w-full appearance-none bg-transparent">
+                </div>
+
+                <div class="flex justify-between items-center px-10 mb-4">
+                    <button onclick="toggleShuffle()" id="btn-shuffle" class="text-white/40 transition-all duration-300">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/></svg>
+                    </button>
+                    <div class="flex items-center gap-8">
+                        <button onclick="prevVideo()" class="text-white active:scale-90 transition"><svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg></button>
+                        <button onclick="togglePlay()" id="play-pause-btn" class="w-14 h-14 bg-white rounded-full flex items-center justify-center active:scale-95 transition shadow-lg" style="color: var(--app-bg);">
+                            <svg id="icon-play" width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                            <svg id="icon-pause" class="hidden" width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+                        </button>
+                        <button onclick="nextVideo()" class="text-white active:scale-90 transition"><svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg></button>
+                    </div>
+                    <button onclick="toggleRepeat()" id="btn-repeat" class="text-white/40 transition-all duration-300 relative">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 1l4 4-4 4M3 11V9a4 4 0 014-4h14M7 23l-4-4 4-4M21 13v2a4 4 0 01-4 4H3"/></svg>
+                        <span id="repeat-1-indicator" class="hidden absolute -top-2 -right-2 text-[8px] font-black bg-white rounded-full w-3.5 h-3.5 flex items-center justify-center shadow-md" style="color: var(--app-bg);">1</span>
+                    </button>
+                </div>
             </div>
-        </div>
 
-        <div class="px-6 mb-4">
-            <h1 id="video-title" class="text-lg font-bold truncate leading-tight drop-shadow-md">Loading Rin☪︎ contents...</h1>
-        </div>
+            <div class="flex-1 overflow-y-auto px-4 pb-24" id="playlist-container" style="height: 42vh;">
+                </div>
+        </section>
 
-        <div class="px-6 mb-4">
-            <div class="flex justify-between text-[10px] text-white/80 font-mono mb-1.5 px-1 font-bold">
-                <span id="current-time">0:00</span>
-                <span id="duration-total">0:00</span>
+        <section id="view-links" class="h-full hidden flex flex-col items-center justify-center p-8">
+            <h2 class="text-xl font-serif-custom mb-8">Official Links</h2>
+            <div class="grid grid-cols-1 gap-4 w-full max-w-xs">
+                <a href="#" class="bg-white/10 p-4 rounded-2xl text-center font-bold border border-white/10">X (Twitter)</a>
+                <a href="#" class="bg-white/10 p-4 rounded-2xl text-center font-bold border border-white/10">Official HP</a>
+                <a href="#" class="bg-white/10 p-4 rounded-2xl text-center font-bold border border-white/10">BOOTH</a>
             </div>
-            <input type="range" id="seek-bar" value="0" step="0.1" class="w-full appearance-none bg-transparent">
-        </div>
+        </section>
 
-        <!-- コントロール -->
-        <div class="flex justify-between items-center px-8 mb-2">
-            <button onclick="toggleShuffle()" id="btn-shuffle" class="text-white/40 transition-all duration-300">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/></svg>
+        <section id="view-edit" class="h-full hidden flex flex-col p-8">
+            <h2 class="text-xl font-serif-custom mb-4">Edit Playlist</h2>
+            <div id="edit-status" class="text-[10px] bg-white/10 p-4 rounded-xl mb-4">
+                API STATUS: <span id="api-status-text">CHECKING...</span>
+            </div>
+            <p class="text-sm text-white/60">設定項目をここに配置予定</p>
+        </section>
+
+    </main>
+
+    <nav class="fixed bottom-8 left-1/2 -translate-x-1/2 w-[85%] max-w-sm z-50">
+        <div class="flex justify-between items-center px-8 py-4 rounded-full bg-black/30 backdrop-blur-md border border-white/10 shadow-2xl">
+            <button onclick="switchTab('player')" id="nav-player" class="nav-btn relative text-white transition-all">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+                <span class="nav-dot absolute -bottom-3 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-white"></span>
             </button>
-
-            <div class="flex items-center gap-8">
-                <button onclick="prevVideo()" class="text-white active:scale-90 transition">
-                    <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
-                </button>
-                <button onclick="togglePlay()" id="play-pause-btn" class="w-16 h-16 bg-white rounded-full flex items-center justify-center active:scale-95 transition shadow-lg" style="color: var(--app-bg);">
-                    <svg id="icon-play" width="32" height="32" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-                    <svg id="icon-pause" class="hidden" width="32" height="32" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
-                </button>
-                <button onclick="nextVideo()" class="text-white active:scale-90 transition">
-                    <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
-                </button>
-            </div>
-
-            <button onclick="toggleRepeat()" id="btn-repeat" class="text-white/40 transition-all duration-300 relative">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 1l4 4-4 4M3 11V9a4 4 0 014-4h14M7 23l-4-4 4-4M21 13v2a4 4 0 01-4 4H3"/></svg>
-                <span id="repeat-1-indicator" class="hidden absolute -top-2 -right-2 text-[9px] font-black bg-white rounded-full w-4 h-4 flex items-center justify-center shadow-md" style="color: var(--app-bg);">1</span>
+            <button onclick="switchTab('links')" id="nav-links" class="nav-btn relative text-white/40 transition-all">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                <span class="nav-dot absolute -bottom-3 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-white hidden"></span>
+            </button>
+            <button onclick="switchTab('edit')" id="nav-edit" class="nav-btn relative text-white/40 transition-all">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>
+                <span class="nav-dot absolute -bottom-3 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-white hidden"></span>
             </button>
         </div>
-    </div>
-
-    <!-- リストエリア (ちょうど4つ分表示) -->
-    <div class="flex-1 overflow-y-auto px-4" id="playlist-container">
-        <!-- JSで生成 -->
-    </div>
-
-    <!-- 下部の固定余白 -->
-    <div class="w-full h-8 safe-bottom flex-shrink-0"></div>
-
-
-    <!-- API設定モーダル (MY_API_KEYが空の時だけ表示) -->
-    <div id="setup-modal" class="fixed inset-0 z-[10000] bg-black/95 flex items-center justify-center p-8 hidden">
-        <div class="w-full max-w-sm space-y-6">
-            <h2 class="text-2xl font-bold">API Setup</h2>
-            <input id="api-key-input" type="password" placeholder="YouTube API Key" class="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-4 text-white outline-none">
-            <button onclick="saveApiKey()" class="w-full py-4 rounded-xl font-bold" style="background: var(--app-bg);">Save Key</button>
-        </div>
-    </div>
+    </nav>
 
     <script>
-        // ==============================================================
-        // ⚙️ 設定: ここにYouTube APIキーを貼り付けると、毎回の入力を省略できます
-        // ==============================================================
         const MY_API_KEY = "AIzaSyBQ5nPI4F-ATGGHXi5CmjAUCmpf05KPpZU"; 
-        // 例: const MY_API_KEY = "AIzaSyBxxxxxxxxxxxxxxxxxxxxxx";
-
-
         let player, playlist =[], currentIndex = 0;
         let isShuffle = false, repeatMode = 0; 
         const TARGET_HANDLE = '@r_____in__';
@@ -160,25 +170,26 @@
         async function startApp() {
             if(appStarted) return;
             appStarted = true;
-
             const splash = document.getElementById('splash-screen');
             splash.classList.add('splash-fade-out');
             setTimeout(() => { splash.style.display = 'none'; }, 600);
-
-            if ('wakeLock' in navigator) await navigator.wakeLock.request('screen').catch(()=>{});
-
-            // ハードコードされたキーがあれば保存、なければローカルストレージから取得
-            let apiKey = MY_API_KEY || localStorage.getItem('yt_api_key');
             
-            if (!apiKey) {
-                document.getElementById('setup-modal').classList.remove('hidden');
-                return;
-            }
-            if (MY_API_KEY) {
-                localStorage.setItem('yt_api_key', MY_API_KEY);
-            }
+            let apiKey = MY_API_KEY || localStorage.getItem('yt_api_key');
+            if (apiKey) checkAndFetchList(apiKey);
+        }
 
-            checkAndFetchList(apiKey);
+        function switchTab(tabId) {
+            ['view-player', 'view-links', 'view-edit'].forEach(id => {
+                document.getElementById(id).classList.add('hidden');
+            });
+            document.getElementById('view-' + tabId).classList.remove('hidden');
+
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.replace('text-white', 'text-white/40'));
+            document.querySelectorAll('.nav-dot').forEach(dot => dot.classList.add('hidden'));
+
+            const activeBtn = document.getElementById('nav-' + tabId);
+            activeBtn.classList.replace('text-white/40', 'text-white');
+            activeBtn.querySelector('.nav-dot').classList.remove('hidden');
         }
 
         async function checkAndFetchList(apiKey) {
@@ -188,7 +199,7 @@
 
             if (cachedData && lastFetch && (now - lastFetch < UPDATE_INTERVAL)) {
                 playlist = JSON.parse(cachedData);
-                document.getElementById('update-badge').innerText = "LIST: CACHED";
+                updateApiStatus("LIST: CACHED");
                 renderPlaylist();
                 if(playlist.length > 0) playAt(0, true);
             } else {
@@ -196,8 +207,13 @@
             }
         }
 
+        function updateApiStatus(text) {
+            const el = document.getElementById('api-status-text');
+            if(el) el.innerText = text;
+        }
+
         async function fetchFullPlaylist(apiKey) {
-            document.getElementById('update-badge').innerText = "LIST: UPDATING...";
+            updateApiStatus("UPDATING...");
             try {
                 const chRes = await fetch(`https://www.googleapis.com/youtube/v3/channels?part=contentDetails&forHandle=${TARGET_HANDLE}&key=${apiKey}`);
                 const chData = await chRes.json();
@@ -211,36 +227,28 @@
                 const vData = await vRes.json();
 
                 playlist = vData.items
-                    .filter(v => {
-                        const duration = v.contentDetails.duration;
-                        return duration.includes('M') || duration.includes('H');
-                    })
+                    .filter(v => v.contentDetails.duration.includes('M') || v.contentDetails.duration.includes('H'))
                     .map(v => ({
-                        id: v.id,
-                        title: v.snippet.title,
-                        thumb: v.snippet.thumbnails.medium.url,
+                        id: v.id, title: v.snippet.title, thumb: v.snippet.thumbnails.medium.url,
                         duration: parseISO8601(v.contentDetails.duration)
                     }));
 
                 localStorage.setItem(CACHE_KEY, JSON.stringify(playlist));
                 localStorage.setItem('last_fetch_time', Date.now());
-                
-                document.getElementById('update-badge').innerText = "LIST: UPDATED";
+                updateApiStatus("LIST: UPDATED");
                 renderPlaylist();
                 if(playlist.length > 0) playAt(0, true);
-            } catch (e) { alert("API Error. Please check your key."); }
+            } catch (e) { updateApiStatus("API ERROR"); }
         }
 
         function renderPlaylist() {
             const container = document.getElementById('playlist-container');
             container.innerHTML = playlist.map((item, i) => `
-                <div onclick="playAt(${i})" class="flex items-center gap-4 mb-3 p-3 rounded-2xl active:scale-[0.98] transition-all cursor-pointer ${i === currentIndex ? 'bg-white/30 border border-white/20 shadow-lg' : 'bg-white/10 border border-transparent'}">
-                    <img src="${item.thumb}" class="w-28 aspect-video object-cover rounded-lg shadow-md">
+                <div onclick="playAt(${i})" class="flex items-center gap-4 mb-3 p-3 rounded-2xl active:scale-[0.98] transition-all cursor-pointer ${i === currentIndex ? 'bg-white/20 border border-white/10' : 'bg-white/5 border border-transparent'}">
+                    <img src="${item.thumb}" class="w-24 aspect-video object-cover rounded-lg">
                     <div class="flex-1 min-w-0">
-                        <div class="text-[15px] font-bold truncate ${i === currentIndex ? 'text-white' : 'text-white/90'}">${item.title}</div>
-                        <div class="text-[10px] text-white/70 mt-1 font-bold uppercase tracking-widest">
-                            Track ${i+1} <span class="mx-1">•</span> ${item.duration}
-                        </div>
+                        <div class="text-[14px] font-bold truncate ${i === currentIndex ? 'text-white' : 'text-white/80'}">${item.title}</div>
+                        <div class="text-[9px] text-white/50 mt-1 font-bold uppercase tracking-widest">Track ${i+1} • ${item.duration}</div>
                     </div>
                 </div>
             `).join('');
@@ -249,72 +257,41 @@
         function playAt(index, autoPlay = true) {
             if(!player || !player.loadVideoById) return; 
             currentIndex = index;
-            const video = playlist[currentIndex];
-            document.getElementById('video-title').innerText = video.title;
-            document.getElementById('duration-total').innerText = video.duration;
-            
-            if (autoPlay) player.loadVideoById(video.id);
-            else player.cueVideoById(video.id);
+            if (autoPlay) player.loadVideoById(playlist[currentIndex].id);
+            else player.cueVideoById(playlist[currentIndex].id);
             renderPlaylist();
         }
 
-        function togglePlay() {
-            player.getPlayerState() === 1 ? player.pauseVideo() : player.playVideo();
-        }
-
-        function nextVideo() {
-            if (isShuffle) {
-                currentIndex = Math.floor(Math.random() * playlist.length);
-            } else {
-                currentIndex = (currentIndex + 1) % playlist.length;
-                if (currentIndex === 0 && repeatMode === 0) return player.stopVideo();
-            }
-            playAt(currentIndex);
-        }
-
-        function prevVideo() {
-            currentIndex = (currentIndex - 1 + playlist.length) % playlist.length;
-            playAt(currentIndex);
-        }
+        function togglePlay() { player.getPlayerState() === 1 ? player.pauseVideo() : player.playVideo(); }
+        function nextVideo() { currentIndex = (currentIndex + 1) % playlist.length; playAt(currentIndex); }
+        function prevVideo() { currentIndex = (currentIndex - 1 + playlist.length) % playlist.length; playAt(currentIndex); }
 
         function toggleShuffle() {
             isShuffle = !isShuffle;
             const btn = document.getElementById('btn-shuffle');
-            isShuffle ? btn.classList.replace('text-white/40', 'glow-active') : btn.classList.replace('glow-active', 'text-white/40');
+            btn.classList.toggle('text-white', isShuffle);
+            btn.classList.toggle('text-white/40', !isShuffle);
         }
 
         function toggleRepeat() {
             repeatMode = (repeatMode + 1) % 3;
             const btn = document.getElementById('btn-repeat');
             const ind = document.getElementById('repeat-1-indicator');
-            
-            btn.classList.remove('glow-active');
-            btn.classList.add('text-white/40');
-            ind.classList.add('hidden');
-
-            if (repeatMode === 1) {
-                btn.classList.replace('text-white/40', 'glow-active');
-            } else if (repeatMode === 2) {
-                btn.classList.replace('text-white/40', 'glow-active');
-                ind.classList.remove('hidden');
-            }
+            btn.classList.toggle('text-white', repeatMode > 0);
+            btn.classList.toggle('text-white/40', repeatMode === 0);
+            ind.classList.toggle('hidden', repeatMode !== 2);
         }
 
         function onPlayerStateChange(e) {
             const iconPlay = document.getElementById('icon-play');
             const iconPause = document.getElementById('icon-pause');
-            
             if (e.data === 1) {
                 iconPlay.classList.add('hidden'); iconPause.classList.remove('hidden');
                 updateTick();
             } else {
                 iconPlay.classList.remove('hidden'); iconPause.classList.add('hidden');
             }
-            
-            if (e.data === 0) { 
-                if (repeatMode === 2) playAt(currentIndex);
-                else nextVideo();
-            }
+            if (e.data === 0) nextVideo();
         }
 
         function updateTick() {
@@ -323,37 +300,24 @@
                 const curr = player.getCurrentTime();
                 const total = player.getDuration();
                 document.getElementById('current-time').innerText = formatSeconds(curr);
+                document.getElementById('duration-total').innerText = formatSeconds(total);
                 document.getElementById('seek-bar').value = (curr / total) * 100 || 0;
             }, 500);
         }
 
         document.getElementById('seek-bar').addEventListener('input', function() {
-            if(player && player.getDuration) {
-                const time = player.getDuration() * (this.value / 100);
-                player.seekTo(time);
-            }
+            if(player && player.getDuration) player.seekTo(player.getDuration() * (this.value / 100));
         });
 
         function parseISO8601(duration) {
-            if (!duration) return "0:00";
             const match = duration.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
-            if (!match) return "0:00";
-            const h = parseInt(match[1] || 0);
-            const m = parseInt(match[2] || 0);
-            const s = parseInt(match[3] || 0);
-            const totalSec = h * 3600 + m * 60 + s;
-            return formatSeconds(totalSec);
+            const h = parseInt(match[1] || 0), m = parseInt(match[2] || 0), s = parseInt(match[3] || 0);
+            return formatSeconds(h * 3600 + m * 60 + s);
         }
 
         function formatSeconds(sec) {
-            const m = Math.floor(sec / 60);
-            const s = Math.floor(sec % 60);
+            const m = Math.floor(sec / 60), s = Math.floor(sec % 60);
             return `${m}:${s.toString().padStart(2, '0')}`;
-        }
-
-        function saveApiKey() {
-            const key = document.getElementById('api-key-input').value;
-            if (key) { localStorage.setItem('yt_api_key', key); location.reload(); }
         }
     </script>
 </body>
