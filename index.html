@@ -12,21 +12,25 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* アプリ全体の背景色と基本設定 */
-        body { background: #5974FA; color: #fff; overflow: hidden; }
+        /* ★ アプリ全体の背景色 (前回の #5974FA より少し暗く落ち着いたディープブルー) */
+        :root {
+            --app-bg: #3B51D4; 
+        }
+
+        body { background: var(--app-bg); color: #fff; overflow: hidden; }
         
-        /* iPhoneの上のバー（ステータスバー）と重ならないようにする余白 */
+        /* iPhoneのセーフエリア（上下のバーを避ける） */
         .safe-top { padding-top: max(1rem, env(safe-area-inset-top)); }
-        
-        /* 画面下のホームバーと被らないための余白 */
         .safe-bottom { padding-bottom: max(1rem, env(safe-area-inset-bottom)); }
 
+        /* シークバーのデザイン */
         input[type="range"]::-webkit-slider-runnable-track { background: rgba(255,255,255,0.3); border-radius: 4px; height: 4px; }
         input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; background: #fff; width: 14px; height: 14px; border-radius: 50%; margin-top: -5px; box-shadow: 0 0 10px rgba(255,255,255,0.5); }
         
-        /* 発光エフェクト (コントロール用: 白く強く光るように変更) */
+        /* 発光エフェクト */
         .glow-active { color: #ffffff !important; filter: drop-shadow(0 0 12px rgba(255, 255, 255, 1)); }
         
+        /* アニメーション */
         @keyframes float {
             0%, 100% { transform: translateY(0px); }
             50% { transform: translateY(-15px); }
@@ -38,14 +42,14 @@
 <body class="flex flex-col h-screen font-sans">
 
     <!-- スプラッシュスクリーン -->
-    <div id="splash-screen" class="fixed inset-0 z-[9999] bg-[#5974FA] flex flex-col items-center justify-center transition-all" onclick="startApp()">
-        <div class="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent pointer-events-none"></div>
+    <div id="splash-screen" class="fixed inset-0 z-[9999] flex flex-col items-center justify-center transition-all" style="background: var(--app-bg);" onclick="startApp()">
+        <div class="absolute inset-0 bg-gradient-to-b from-white/10 to-black/20 pointer-events-none"></div>
 
         <div class="relative w-48 h-48 mb-8 animate-float">
             <img src="./character.png" alt="Character" 
-                 class="w-full h-full object-cover rounded-full shadow-[0_0_40px_rgba(255,255,255,0.5)] relative z-10"
+                 class="w-full h-full object-cover rounded-full shadow-[0_0_50px_rgba(255,255,255,0.4)] relative z-10"
                  onerror="this.style.display='none'; document.getElementById('fallback-circle').style.display='block';">
-            <div id="fallback-circle" class="hidden absolute inset-0 rounded-full border-2 border-white shadow-[0_0_40px_rgba(255,255,255,0.5)]"></div>
+            <div id="fallback-circle" class="hidden absolute inset-0 rounded-full border-2 border-white shadow-[0_0_50px_rgba(255,255,255,0.4)]"></div>
         </div>
 
         <h1 class="text-4xl font-black tracking-[0.4em] text-white mb-2 text-center ml-3 z-10 drop-shadow-lg">RIN☪︎</h1>
@@ -57,7 +61,7 @@
     </div>
 
 
-    <!-- プレイヤー固定エリア (safe-top で上のバーと被らないように) -->
+    <!-- プレイヤー固定エリア -->
     <div class="w-full safe-top pb-2 z-20 flex-shrink-0">
         <div class="flex justify-between items-center mb-4 px-6">
             <div class="text-[10px] font-bold tracking-[0.3em] text-white/90">RIN☪︎ OFFICIAL PLAYER</div>
@@ -65,9 +69,8 @@
         </div>
         
         <div class="w-full px-4 mb-4">
-            <!-- 動画エリア: YouTubeの黒枠が目立たないよう背景を少し暗く -->
-            <div class="w-full aspect-video rounded-2xl overflow-hidden bg-black/40 shadow-2xl border border-white/20">
-                <div id="player"></div>
+            <div class="w-full aspect-video rounded-2xl overflow-hidden bg-black/50 shadow-2xl border border-white/20 relative">
+                <div id="player" class="absolute inset-0"></div>
             </div>
         </div>
 
@@ -83,7 +86,7 @@
             <input type="range" id="seek-bar" value="0" step="0.1" class="w-full appearance-none bg-transparent">
         </div>
 
-        <!-- コントロール (非アクティブ時は半透明の白、アクティブ時は強発光) -->
+        <!-- コントロール -->
         <div class="flex justify-between items-center px-8 mb-2">
             <button onclick="toggleShuffle()" id="btn-shuffle" class="text-white/40 transition-all duration-300">
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/></svg>
@@ -93,7 +96,7 @@
                 <button onclick="prevVideo()" class="text-white active:scale-90 transition">
                     <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
                 </button>
-                <button onclick="togglePlay()" id="play-pause-btn" class="w-16 h-16 bg-white text-[#5974FA] rounded-full flex items-center justify-center active:scale-95 transition shadow-lg">
+                <button onclick="togglePlay()" id="play-pause-btn" class="w-16 h-16 bg-white rounded-full flex items-center justify-center active:scale-95 transition shadow-lg" style="color: var(--app-bg);">
                     <svg id="icon-play" width="32" height="32" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
                     <svg id="icon-pause" class="hidden" width="32" height="32" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
                 </button>
@@ -104,35 +107,42 @@
 
             <button onclick="toggleRepeat()" id="btn-repeat" class="text-white/40 transition-all duration-300 relative">
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 1l4 4-4 4M3 11V9a4 4 0 014-4h14M7 23l-4-4 4-4M21 13v2a4 4 0 01-4 4H3"/></svg>
-                <span id="repeat-1-indicator" class="hidden absolute -top-2 -right-2 text-[9px] font-black bg-white text-[#5974FA] rounded-full w-4 h-4 flex items-center justify-center shadow-md">1</span>
+                <span id="repeat-1-indicator" class="hidden absolute -top-2 -right-2 text-[9px] font-black bg-white rounded-full w-4 h-4 flex items-center justify-center shadow-md" style="color: var(--app-bg);">1</span>
             </button>
         </div>
     </div>
 
-    <!-- リストエリア (スクロール可能) -->
+    <!-- リストエリア (ちょうど4つ分表示) -->
     <div class="flex-1 overflow-y-auto px-4" id="playlist-container">
         <!-- JSで生成 -->
     </div>
 
-    <!-- 下部の固定余白 (ここでリストの高さを押し上げ、さらにiPhoneのホームバーを避けます) -->
+    <!-- 下部の固定余白 -->
     <div class="w-full h-8 safe-bottom flex-shrink-0"></div>
 
 
-    <!-- API設定モーダル -->
+    <!-- API設定モーダル (MY_API_KEYが空の時だけ表示) -->
     <div id="setup-modal" class="fixed inset-0 z-[10000] bg-black/95 flex items-center justify-center p-8 hidden">
         <div class="w-full max-w-sm space-y-6">
             <h2 class="text-2xl font-bold">API Setup</h2>
             <input id="api-key-input" type="password" placeholder="YouTube API Key" class="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-4 text-white outline-none">
-            <button onclick="saveApiKey()" class="w-full bg-[#5974FA] py-4 rounded-xl font-bold">Save Key</button>
+            <button onclick="saveApiKey()" class="w-full py-4 rounded-xl font-bold" style="background: var(--app-bg);">Save Key</button>
         </div>
     </div>
 
     <script>
+        // ==============================================================
+        // ⚙️ 設定: ここにYouTube APIキーを貼り付けると、毎回の入力を省略できます
+        // ==============================================================
+        const MY_API_KEY = "AIzaSyBQ5nPI4F-ATGGHXi5CmjAUCmpf05KPpZU"; 
+        // 例: const MY_API_KEY = "AIzaSyBxxxxxxxxxxxxxxxxxxxxxx";
+
+
         let player, playlist =[], currentIndex = 0;
         let isShuffle = false, repeatMode = 0; 
         const TARGET_HANDLE = '@r_____in__';
         const UPDATE_INTERVAL = 24 * 60 * 60 * 1000;
-        const CACHE_KEY = 'video_cache_v6'; 
+        const CACHE_KEY = 'video_cache_v7'; 
         let appStarted = false;
 
         const tag = document.createElement('script');
@@ -157,15 +167,21 @@
 
             if ('wakeLock' in navigator) await navigator.wakeLock.request('screen').catch(()=>{});
 
-            const apiKey = localStorage.getItem('yt_api_key');
+            // ハードコードされたキーがあれば保存、なければローカルストレージから取得
+            let apiKey = MY_API_KEY || localStorage.getItem('yt_api_key');
+            
             if (!apiKey) {
                 document.getElementById('setup-modal').classList.remove('hidden');
                 return;
             }
-            checkAndFetchList();
+            if (MY_API_KEY) {
+                localStorage.setItem('yt_api_key', MY_API_KEY);
+            }
+
+            checkAndFetchList(apiKey);
         }
 
-        async function checkAndFetchList() {
+        async function checkAndFetchList(apiKey) {
             const cachedData = localStorage.getItem(CACHE_KEY);
             const lastFetch = localStorage.getItem('last_fetch_time');
             const now = Date.now();
@@ -176,14 +192,12 @@
                 renderPlaylist();
                 if(playlist.length > 0) playAt(0, true);
             } else {
-                await fetchFullPlaylist();
+                await fetchFullPlaylist(apiKey);
             }
         }
 
-        async function fetchFullPlaylist() {
-            const apiKey = localStorage.getItem('yt_api_key');
+        async function fetchFullPlaylist(apiKey) {
             document.getElementById('update-badge').innerText = "LIST: UPDATING...";
-            
             try {
                 const chRes = await fetch(`https://www.googleapis.com/youtube/v3/channels?part=contentDetails&forHandle=${TARGET_HANDLE}&key=${apiKey}`);
                 const chData = await chRes.json();
@@ -219,7 +233,6 @@
 
         function renderPlaylist() {
             const container = document.getElementById('playlist-container');
-            // 画像(w-28)とパディング(p-3)を少し大きくして、画面にちょうど4つ分入るように調整
             container.innerHTML = playlist.map((item, i) => `
                 <div onclick="playAt(${i})" class="flex items-center gap-4 mb-3 p-3 rounded-2xl active:scale-[0.98] transition-all cursor-pointer ${i === currentIndex ? 'bg-white/30 border border-white/20 shadow-lg' : 'bg-white/10 border border-transparent'}">
                     <img src="${item.thumb}" class="w-28 aspect-video object-cover rounded-lg shadow-md">
