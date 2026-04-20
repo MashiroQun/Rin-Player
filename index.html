@@ -84,7 +84,7 @@
             <div class="w-full flex-shrink-0 z-20">
                 
                 <!-- ヘッダー（上部のセーフエリア対応） -->
-                <div class="w-full bg-black/10 safe-top">
+                <div class="w-full bg-black/20 safe-top">
                     <div class="relative flex items-center justify-center h-14">
                         <div class="absolute bottom-0 translate-y-1/4 left-6 z-30">
                             <img src="/character.png" class="w-14 h-14 object-cover rounded-full border-[3px] shadow-xl" style="border-color: var(--app-bg);">
@@ -93,7 +93,7 @@
                     </div>
                 </div>
 
-                <div class="mt-8 px-4 mb-4">
+                <div class="mt-4 px-4 mb-4">
                     <div class="w-full aspect-video rounded-2xl overflow-hidden bg-black/50 shadow-2xl border border-white/10 relative">
                         <div id="player" class="absolute inset-0"></div>
                     </div>
@@ -127,7 +127,7 @@
             </div>
 
             <!-- リストがナビバーに隠れないよう、pb-6 でリスト最下部にも余白を持たせる -->
-            <div class="flex-1 overflow-y-auto px-4 pb-6" id="playlist-container"></div>
+            <div class="flex-1 overflow-y-auto px-4 pb-6 bg-white/5" id="playlist-container"></div>
         </section>
 
         <!-- リンク画面 -->
@@ -161,23 +161,24 @@
     </main>
 
     <!-- ここにナビゲーションバーを追加 -->
-    <nav class="backdrop-blur-md">
+        <nav class="bg-black/20 backdrop-blur-md">
+
         <div class="flex justify-around items-center w-full h-full px-2">
             <!-- プレイヤー タブ -->
-            <button id="nav-player" onclick="switchTab('player')" class="nav-btn text-white flex flex-col items-center justify-center w-16 active:scale-95 transition">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
+            <button id="nav-player" onclick="switchTab('player')" class="nav-btn text-white flex flex-col items-center justify-center w-14 active:scale-95 transition">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
                 <span class="text-[10px] mt-1 font-bold tracking-wider">PLAYER</span>
             </button>
             
             <!-- リンク タブ -->
-            <button id="nav-links" onclick="switchTab('links')" class="nav-btn text-white/30 flex flex-col items-center justify-center w-16 active:scale-95 transition">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+            <button id="nav-links" onclick="switchTab('links')" class="nav-btn text-white/30 flex flex-col items-center justify-center w-14 active:scale-95 transition">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
                 <span class="text-[10px] mt-1 font-bold tracking-wider">LINKS</span>
             </button>
             
             <!-- 設定 タブ -->
-            <button id="nav-edit" onclick="switchTab('edit')" class="nav-btn text-white/30 flex flex-col items-center justify-center w-16 active:scale-95 transition">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+            <button id="nav-edit" onclick="switchTab('edit')" class="nav-btn text-white/30 flex flex-col items-center justify-center w-14 active:scale-95 transition">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
                 <span class="text-[10px] mt-1 font-bold tracking-wider">SETTING</span>
             </button>
         </div>
