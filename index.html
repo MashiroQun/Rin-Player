@@ -64,7 +64,7 @@
     </style>
 </head>
 <!-- 修正：fixed inset-0 を使用して画面全体に完全に固定し、はみ出しを根絶 -->
-<body class="flex flex-col min-h-[100dvh] overflow-hidden">
+<body class="flex flex-col min-h-[100dvh]">
     <!-- スプラッシュ画面 -->
     <div id="splash-screen" class="fixed inset-0 z-[9999] flex flex-col items-center justify-center transition-all" style="background: var(--app-bg);" onclick="startApp()">
         <div class="relative w-32 h-32 mb-8 animate-float">
@@ -125,8 +125,7 @@
             </div>
 
             <!-- リストがナビバーに隠れないよう、pb-6 でリスト最下部にも余白を持たせる -->
-            <div class="flex-1 overflow-y-auto px-3 bg-[#374892]" id="playlist-container"></div>
-        </section>
+            <div class="flex-1 overflow-y-auto px-3 bg-[#374892] min-h-0" id="playlist-container"></div>        </section>
 
         <!-- リンク画面 -->
         <section id="view-links" class="h-full hidden flex flex-col items-center justify-center p-8 w-full">
@@ -159,7 +158,7 @@
     </main>
 
     <!-- ここにナビゲーションバーを追加 -->
-        <nav class="fixed bottom-0 left-0 w-full backdrop-blur-md h-[calc(70px+env(safe-area-inset-bottom))]">
+        <nav class="fixed bottom-0 left-0 w-full bg-[#2C3D85] h-[calc(70px+env(safe-area-inset-bottom))]">
         <div class="flex justify-around items-center h-full w-full pb-[env(safe-area-inset-bottom)]">
             <!-- プレイヤー タブ -->
             <button id="nav-player" onclick="switchTab('player')" class="nav-btn text-white flex flex-col items-center justify-center w-14 active:scale-95 transition">
