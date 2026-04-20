@@ -77,11 +77,11 @@
         </div>
     </div>
 
-    <main class="flex-1 overflow-hidden flex flex-col w-full h-full">
+    <main class="flex-1 overflow-hidden flex flex-col w-full h-full" bg-[#2C3D85]>
         
         <!-- プレイヤー画面 -->
         <section id="view-player" class="h-full flex flex-col w-full">
-            <div class="w-full flex-shrink-0 z-20" bg-[#2C3D85]>
+            <div class="w-full flex-shrink-0 z-20 bg-[#2C3D85]">
                 
                 <!-- ヘッダー（上部のセーフエリア対応） -->
                 <div class="w-full bg-transparent safe-top">
@@ -163,7 +163,7 @@
     <!-- ここにナビゲーションバーを追加 -->
         <nav class="bg-transparent backdrop-blur-md w-full">
 
-        <div class="flex justify-around items-start w-full px-5 pt-4 pb-[calc(env(safe-area-inset-bottom)+16px)]">
+        <div class="flex justify-around items-start w-full px-5 pt-4 pb-[env(safe-area-inset-bottom)]">
 
             <!-- プレイヤー タブ -->
             <button id="nav-player" onclick="switchTab('player')" class="nav-btn text-white flex flex-col items-center justify-center w-14 active:scale-95 transition">
