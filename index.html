@@ -64,7 +64,8 @@
     </style>
 </head>
 <!-- 修正：fixed inset-0 を使用して画面全体に完全に固定し、はみ出しを根絶 -->
-<body class="fixed inset-0 flex flex-col">
+<body class="fixed inset-0 flex flex-col overflow-hidden">
+
     <!-- スプラッシュ画面 -->
     <div id="splash-screen" class="fixed inset-0 z-[9999] flex flex-col items-center justify-center transition-all" style="background: var(--app-bg);" onclick="startApp()">
         <div class="relative w-32 h-32 mb-8 animate-float">
@@ -76,7 +77,7 @@
         </div>
     </div>
 
-    <main class="flex-1 flex flex-col w-full **min-h-0** bg-[#2C3D85] pb-[calc(70px+env(safe-area-inset-bottom))]">
+    <main class="flex-1 flex flex-col w-full min-h-0 bg-[#2C3D85]">
         <section id="view-player" class="**flex-1** flex flex-col w-full **min-h-0** overflow-hidden">
             <div class="w-full flex-shrink-0 z-20 bg-[#2C3D85]">
                 
@@ -158,27 +159,26 @@
     </main>
 
     <!-- ここにナビゲーションバーを追加 -->
-        <nav class="fixed bottom-0 left-0 w-full bg-[#2C3D85] h-[calc(50px+env(safe-area-inset-bottom))]">
-        <div class="flex justify-around items-center h-full w-full pb-[env(safe-area-inset-bottom)]">
-            <!-- プレイヤー タブ -->
-            <button id="nav-player" onclick="switchTab('player')" class="nav-btn text-white flex flex-col items-center justify-center w-14 active:scale-95 transition">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
-                <span class="text-[10px] mt-1 font-bold tracking-wider">PLAYER</span>
-            </button>
-            
-            <!-- リンク タブ -->
-            <button id="nav-links" onclick="switchTab('links')" class="nav-btn text-white/30 flex flex-col items-center justify-center w-14 active:scale-95 transition">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
-                <span class="text-[10px] mt-1 font-bold tracking-wider">LINKS</span>
-            </button>
-            
-            <!-- 設定 タブ -->
-            <button id="nav-edit" onclick="switchTab('edit')" class="nav-btn text-white/30 flex flex-col items-center justify-center w-14 active:scale-95 transition">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
-                <span class="text-[10px] mt-1 font-bold tracking-wider">SETTING</span>
-            </button>
-        </div>
-    </nav>
+        <nav class="w-full bg-[#2C3D85] border-t border-white/5">
+    <div class="flex justify-around items-center pt-2 pb-[env(safe-area-inset-bottom)]">
+        
+        <button id="nav-player" onclick="switchTab('player')" class="nav-btn text-white flex flex-col items-center justify-center w-16 active:scale-95 transition">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
+            <span class="text-[9px] mt-1 font-bold tracking-tighter">PLAYER</span>
+        </button>
+        
+        <button id="nav-links" onclick="switchTab('links')" class="nav-btn text-white/30 flex flex-col items-center justify-center w-16 active:scale-95 transition">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+            <span class="text-[9px] mt-1 font-bold tracking-tighter">LINKS</span>
+        </button>
+        
+        <button id="nav-edit" onclick="switchTab('edit')" class="nav-btn text-white/30 flex flex-col items-center justify-center w-16 active:scale-95 transition">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+            <span class="text-[9px] mt-1 font-bold tracking-tighter">SETTING</span>
+        </button>
+    </div>
+</nav>
+
 
     <script>
         const MY_API_KEY = ""; // ソースに直接キーを持たせる場合はここに記載
