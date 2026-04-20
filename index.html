@@ -64,8 +64,7 @@
     </style>
 </head>
 <!-- 修正：fixed inset-0 を使用して画面全体に完全に固定し、はみ出しを根絶 -->
-<body class="fixed inset-0 flex flex-col overflow-hidden">
-
+<body class="flex flex-col min-h-[100dvh] overflow-hidden">
     <!-- スプラッシュ画面 -->
     <div id="splash-screen" class="fixed inset-0 z-[9999] flex flex-col items-center justify-center transition-all" style="background: var(--app-bg);" onclick="startApp()">
         <div class="relative w-32 h-32 mb-8 animate-float">
@@ -77,8 +76,7 @@
         </div>
     </div>
 
-    <main class="flex-1 overflow-hidden flex flex-col w-full h-full bg-[#2C3D85] pb-20" >
-        
+    <main class="flex-1 overflow-hidden flex flex-col w-full h-full bg-[#2C3D85] pb-[calc(70px+env(safe-area-inset-bottom))]">
         <!-- プレイヤー画面 -->
         <section id="view-player" class="h-full flex flex-col w-full">
             <div class="w-full flex-shrink-0 z-20 bg-[#2C3D85]">
@@ -127,7 +125,7 @@
             </div>
 
             <!-- リストがナビバーに隠れないよう、pb-6 でリスト最下部にも余白を持たせる -->
-            <div class="flex-1 overflow-y-auto px-3 pb-6 bg-[#374892]" id="playlist-container"></div>
+            <div class="flex-1 overflow-y-auto px-3 bg-[#374892]" id="playlist-container"></div>
         </section>
 
         <!-- リンク画面 -->
@@ -161,10 +159,8 @@
     </main>
 
     <!-- ここにナビゲーションバーを追加 -->
-        <nav class="bg-transparent backdrop-blur-md w-full  flex flex-col justify-start">
-
-        <div class="flex justify-around items-center pt-2 w-full pb-[env(safe-area-inset-bottom)]">
-
+        <nav class="fixed bottom-0 left-0 w-full backdrop-blur-md h-[calc(70px+env(safe-area-inset-bottom))]">
+        <div class="flex justify-around items-center h-full w-full pb-[env(safe-area-inset-bottom)]">
             <!-- プレイヤー タブ -->
             <button id="nav-player" onclick="switchTab('player')" class="nav-btn text-white flex flex-col items-center justify-center w-14 active:scale-95 transition">
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
@@ -393,15 +389,7 @@
             const m = Math.floor(sec / 60), s = Math.floor(sec % 60);
             return `${m}:${s.toString().padStart(2, '0')}`;
         }
-        // Safe Area 動的調整（最小限）
-function fixBottomNav() {
-    const nav = document.querySelector('nav');
-    if (nav) {
-        nav.style.height = `calc(56px + env(safe-area-inset-bottom, 0px))`;
-    }
-}
-window.addEventListener('resize', fixBottomNav);
-window.addEventListener('orientationchange', () => setTimeout(fixBottomNav, 200));
+
     </script>
 </body>
 </html>
