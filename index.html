@@ -64,7 +64,7 @@
     </style>
 </head>
 <!-- 修正：fixed inset-0 を使用して画面全体に完全に固定し、はみ出しを根絶 -->
-<body class="flex flex-col min-h-[100dvh] overflow-hidden">
+<body class="fixed inset-0 flex flex-col">
     <!-- スプラッシュ画面 -->
     <div id="splash-screen" class="fixed inset-0 z-[9999] flex flex-col items-center justify-center transition-all" style="background: var(--app-bg);" onclick="startApp()">
         <div class="relative w-32 h-32 mb-8 animate-float">
@@ -76,9 +76,8 @@
         </div>
     </div>
 
-    <main class="flex-1 flex flex-col w-full bg-[#2C3D85] pb-[calc(70px+env(safe-area-inset-bottom))]">
-        <!-- プレイヤー画面 -->
-        <section id="view-player" class="flex flex-col w-full h-full min-h-0 overflow-hidden">
+    <main class="flex-1 flex flex-col w-full h-full overflow-hidden bg-[#2C3D85] pb-[calc(70px+env(safe-area-inset-bottom))]">        <!-- プレイヤー画面 -->
+        <section id="view-player" class="flex flex-col w-full h-full overflow-hidden">
             <div class="w-full flex-shrink-0 z-20 bg-[#2C3D85]">
                 
                 <!-- ヘッダー（上部のセーフエリア対応） -->
