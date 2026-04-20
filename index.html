@@ -7,36 +7,90 @@
     
     <link rel="icon" href="/character.png" type="image/png">
     <link rel="apple-touch-icon" href="/character.png">
-    <link rel="manifest" href="/manifest.webmanifest">
+    <link rel="manifest" href="/manifest.json">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     
-    <link rel="stylesheet" href="/style.css">
-</head>
-    <body class="flex flex-col" style="height: calc(var(--vh, 1dvh) * 100);">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <style>
+        :root { --app-bg: #2C3D85; }
+        body { 
+            background: var(--app-bg); 
+            color: #fff; 
+            overflow: hidden; 
+            margin: 0;
+            height: 100dvh;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
 
+        /* Safe Areaの分離（ズレ問題の解決の要） */
+        .safe-top { padding-top: max(env(safe-area-inset-top), 20px); }
+        .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom), 16px); }
+
+        input[type="range"] {
+            -webkit-appearance: none;
+            background: transparent;
+            cursor: pointer;
+        }
+        input[type="range"]::-webkit-slider-runnable-track { 
+            background: rgba(255,255,255,0.2); 
+            border-radius: 4px; 
+            height: 4px; 
+        }
+        input[type="range"]::-webkit-slider-thumb { 
+            -webkit-appearance: none; 
+            background: #fff; 
+            width: 14px; 
+            height: 14px; 
+            border-radius: 50%; 
+            margin-top: -5px; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-8px); }
+        }
+        .animate-float { animation: float 4s ease-in-out infinite; }
+
+        .splash-fade-out { 
+            opacity: 0; 
+            pointer-events: none; 
+            transform: scale(1.05); 
+            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1); 
+        }
+    </style>
+</head>
+<body class="flex flex-col h-[100dvh]">
+
+    <!-- スプラッシュ画面 -->
     <div id="splash-screen" class="fixed inset-0 z-[9999] flex flex-col items-center justify-center transition-all" style="background: var(--app-bg);" onclick="startApp()">
         <div class="relative w-32 h-32 mb-8 animate-float">
-            <img src="/character.png" alt="Icon" class="w-full h-full object-cover rounded-full shadow-2xl border-[3px] border-white/10">
+            <img src="/character.png" alt="アイコン" class="w-full h-full object-cover rounded-full shadow-2xl border-[3px] border-white/10">
         </div>
         <h1 class="text-2xl font-bold tracking-[0.1em] text-white mb-4 text-center z-10 drop-shadow-lg">Rin☪︎ Music Player</h1>
         <div class="absolute bottom-24 animate-pulse text-white/70 text-[10px] font-bold tracking-[0.2em] z-10">
-            - TAP TO START -
+            - タップして開始 -
         </div>
     </div>
 
     <main class="flex-1 overflow-hidden flex flex-col">
         
+        <!-- プレイヤー画面 -->
         <section id="view-player" class="h-full flex flex-col w-full">
-            
             <div class="w-full flex-shrink-0 z-20">
                 
-                <div class="w-full safe-top relative bg-black/10 flex items-center justify-center min-h-20">
-                    <div class="absolute -bottom-3 left-6 z-30">
-                        <img src="/character.png" class="w-14 h-14 object-cover rounded-full border-[3px] shadow-xl" style="border-color: var(--app-bg);">
+                <!-- 【修正】ヘッダー部分：セーフエリアと高さを分離 -->
+                <div class="w-full bg-black/10 safe-top">
+                    <div class="relative flex items-center justify-center h-16">
+                        <div class="absolute bottom-0 translate-y-1/4 left-6 z-30">
+                            <img src="/character.png" class="w-14 h-14 object-cover rounded-full border-[3px] shadow-xl" style="border-color: var(--app-bg);">
+                        </div>
+                        <h1 class="text-[17px] font-bold tracking-widest text-white/90 z-20">Rin☪︎ Music Player</h1>
                     </div>
-                    
-                    <h1 class="text-[17px] font-bold tracking-widest text-white/90 z-20">Rin☪︎ Music Player</h1>
                 </div>
 
                 <div class="mt-8 px-4 mb-4">
@@ -72,30 +126,40 @@
                 </div>
             </div>
 
-            <div class="flex-1 overflow-y-auto px-4 pb-4" id="playlist-container">
-            </div>
+            <div class="flex-1 overflow-y-auto px-4 pb-4" id="playlist-container"></div>
         </section>
 
+        <!-- リンク画面 -->
         <section id="view-links" class="h-full hidden flex flex-col items-center justify-center p-8 w-full">
-            <h2 class="text-lg font-bold mb-8 tracking-widest text-white/70 uppercase">Official Links</h2>
+            <h2 class="text-lg font-bold mb-8 tracking-widest text-white/70 uppercase">公式リンク</h2>
             <div class="grid grid-cols-1 gap-4 w-full max-w-xs">
                 <a href="#" class="bg-white/5 p-4 rounded-2xl text-center font-bold border border-white/5 active:bg-white/10 transition">X (Twitter)</a>
-                <a href="#" class="bg-white/5 p-4 rounded-2xl text-center font-bold border border-white/5 active:bg-white/10 transition">Official HP</a>
+                <a href="#" class="bg-white/5 p-4 rounded-2xl text-center font-bold border border-white/5 active:bg-white/10 transition">公式HP</a>
                 <a href="#" class="bg-white/5 p-4 rounded-2xl text-center font-bold border border-white/5 active:bg-white/10 transition">BOOTH</a>
             </div>
         </section>
 
-        <section id="view-edit" class="h-full hidden flex flex-col p-8 pt-12 w-full">
-            <h2 class="text-lg font-bold mb-6 tracking-widest text-white/70 uppercase">Edit Playlist</h2>
-            <div class="bg-black/20 p-4 rounded-2xl border border-white/5 mb-4">
-                <div class="text-[10px] text-white/40 mb-1 font-bold uppercase tracking-tighter">System Status</div>
-                <div class="text-xs font-bold text-white/90">API: <span id="api-status-text">IDLE</span></div>
+        <!-- 設定・APIキー画面 -->
+        <section id="view-edit" class="h-full hidden flex flex-col p-8 pt-12 w-full overflow-y-auto">
+            <h2 class="text-lg font-bold mb-6 tracking-widest text-white/70 uppercase">設定</h2>
+            
+            <div class="bg-black/20 p-4 rounded-2xl border border-white/5 mb-6">
+                <div class="text-[10px] text-white/40 mb-1 font-bold uppercase tracking-tighter">システムステータス</div>
+                <div class="text-xs font-bold text-white/90">API: <span id="api-status-text">待機中</span></div>
             </div>
-            <p class="text-xs text-white/40 px-2">Settings and playlist management will be here.</p>
+
+            <div class="bg-black/20 p-4 rounded-2xl border border-white/5">
+                <label class="block text-[10px] text-white/40 mb-2 font-bold uppercase tracking-tighter">YouTube API キー設定</label>
+                <input type="password" id="api-key-input" placeholder="AIzaSy..." class="w-full bg-black/40 text-white text-sm px-3 py-3 rounded-xl border border-white/10 mb-4 focus:outline-none focus:border-white/50 transition">
+                <button onclick="saveApiKey()" class="w-full bg-white/10 hover:bg-white/20 active:scale-95 text-white font-bold py-3 rounded-xl transition-all text-sm">
+                    APIキーを保存して更新
+                </button>
+            </div>
         </section>
 
     </main>
 
+    <!-- ナビゲーション（ここも親要素でセーフエリア確保） -->
     <nav class="flex-shrink-0 w-full bg-black/10 border-t border-white/5 safe-bottom z-50">
         <div class="flex justify-around items-center h-16 px-6 max-w-md mx-auto">
             <button onclick="switchTab('player')" id="nav-player" class="nav-btn text-white transition-all active:scale-95">
@@ -111,13 +175,20 @@
     </nav>
 
     <script>
-        const MY_API_KEY = "AIzaSyBQ5nPI4F-ATGGHXi5CmjAUCmpf05KPpZU"; 
+        const MY_API_KEY = ""; // 初期キーを持たせる場合はここに記載
         let player, playlist =[], currentIndex = 0;
         let isShuffle = false, repeatMode = 0; 
         const TARGET_HANDLE = '@r_____in__';
         const UPDATE_INTERVAL = 24 * 60 * 60 * 1000;
-        const CACHE_KEY = 'video_cache_v7'; 
+        const CACHE_KEY = 'video_cache_v8'; 
         let appStarted = false;
+
+        // PWA ServiceWorkerの登録
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js');
+            });
+        }
 
         const tag = document.createElement('script');
         tag.src = "https://www.youtube.com/iframe_api";
@@ -130,14 +201,6 @@
                 events: { 'onStateChange': onPlayerStateChange }
             });
         }
-        // ビューポート高さをCSS変数で管理（iOS/iPad対策）
-function setVH() {
-    document.documentElement.style.setProperty('--vh', `${window.innerHeight * 0.01}px`);
-}
-window.addEventListener('resize', setVH);
-window.addEventListener('orientationchange', setVH);
-setVH(); // 初回実行
-
 
         async function startApp() {
             if(appStarted) return;
@@ -146,28 +209,49 @@ setVH(); // 初回実行
             splash.classList.add('splash-fade-out');
             setTimeout(() => { splash.style.display = 'none'; }, 600);
             
-            let apiKey = MY_API_KEY || localStorage.getItem('yt_api_key');
-            if (apiKey) checkAndFetchList(apiKey);
+            const savedKey = localStorage.getItem('yt_api_key');
+            const apiKey = savedKey || MY_API_KEY;
+            
+            if (savedKey) {
+                document.getElementById('api-key-input').value = savedKey;
+            }
+
+            if (apiKey) {
+                checkAndFetchList(apiKey);
+            } else {
+                updateApiStatus("APIキー未設定");
+                switchTab('edit'); // 未設定なら設定画面に飛ばす
+            }
         }
 
         function switchTab(tabId) {
             ['view-player', 'view-links', 'view-edit'].forEach(id => document.getElementById(id).classList.add('hidden'));
             document.getElementById('view-' + tabId).classList.remove('hidden');
-
             document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.replace('text-white', 'text-white/30'));
             document.getElementById('nav-' + tabId).classList.replace('text-white/30', 'text-white');
         }
 
-        async function checkAndFetchList(apiKey) {
+        function saveApiKey() {
+            const input = document.getElementById('api-key-input').value.trim();
+            if (input) {
+                localStorage.setItem('yt_api_key', input);
+                alert('APIキーを保存しました。プレイリストを更新します。');
+                checkAndFetchList(input, true);
+            } else {
+                alert('APIキーを入力してください。');
+            }
+        }
+
+        async function checkAndFetchList(apiKey, forceUpdate = false) {
             const cachedData = localStorage.getItem(CACHE_KEY);
             const lastFetch = localStorage.getItem('last_fetch_time');
             const now = Date.now();
 
-            if (cachedData && lastFetch && (now - lastFetch < UPDATE_INTERVAL)) {
+            if (!forceUpdate && cachedData && lastFetch && (now - lastFetch < UPDATE_INTERVAL)) {
                 playlist = JSON.parse(cachedData);
-                updateApiStatus("CACHED");
+                updateApiStatus("キャッシュ適用済み");
                 renderPlaylist();
-                if(playlist.length > 0) playAt(0, true);
+                if(playlist.length > 0) playAt(0, false);
             } else {
                 await fetchFullPlaylist(apiKey);
             }
@@ -179,10 +263,13 @@ setVH(); // 初回実行
         }
 
         async function fetchFullPlaylist(apiKey) {
-            updateApiStatus("UPDATING...");
+            updateApiStatus("通信中...");
             try {
                 const chRes = await fetch(`https://www.googleapis.com/youtube/v3/channels?part=contentDetails&forHandle=${TARGET_HANDLE}&key=${apiKey}`);
+                if (!chRes.ok) throw new Error("Network Error");
                 const chData = await chRes.json();
+                if (!chData.items) throw new Error("Channel Not Found");
+
                 const uploadsListId = chData.items[0].contentDetails.relatedPlaylists.uploads;
 
                 const plRes = await fetch(`https://www.googleapis.com/youtube/v3/playlistItems?part=snippet,contentDetails&maxResults=50&playlistId=${uploadsListId}&key=${apiKey}`);
@@ -201,10 +288,13 @@ setVH(); // 初回実行
 
                 localStorage.setItem(CACHE_KEY, JSON.stringify(playlist));
                 localStorage.setItem('last_fetch_time', Date.now());
-                updateApiStatus("UPDATED");
+                updateApiStatus("更新完了");
                 renderPlaylist();
-                if(playlist.length > 0) playAt(0, true);
-            } catch (e) { updateApiStatus("ERROR"); }
+                if(playlist.length > 0) playAt(0, false);
+            } catch (e) { 
+                updateApiStatus("エラー: キーを確認してください");
+                console.error(e);
+            }
         }
 
         function renderPlaylist() {
@@ -214,7 +304,7 @@ setVH(); // 初回実行
                     <img src="${item.thumb}" class="w-24 aspect-video object-cover rounded-xl shadow-lg">
                     <div class="flex-1 min-w-0">
                         <div class="text-[13px] font-bold truncate ${i === currentIndex ? 'text-white' : 'text-white/60'}">${item.title}</div>
-                        <div class="text-[9px] text-white/30 mt-1 font-bold tracking-widest uppercase">Track ${i+1} • ${item.duration}</div>
+                        <div class="text-[9px] text-white/30 mt-1 font-bold tracking-widest uppercase">トラック ${i+1} • ${item.duration}</div>
                     </div>
                 </div>
             `).join('');
