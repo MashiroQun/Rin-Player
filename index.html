@@ -125,7 +125,179 @@
 
     <!-- script はそのまま -->
     <script>
-        /* あなたの JS 全部そのまま */
+        const MY_API_KEY = "AIzaSyBQ5nPI4F-ATGGHXi5CmjAUCmpf05KPpZU"; 
+        let player, playlist =[], currentIndex = 0;
+        let isShuffle = false, repeatMode = 0; 
+        const TARGET_HANDLE = '@r_____in__';
+        const UPDATE_INTERVAL = 24 * 60 * 60 * 1000;
+        const CACHE_KEY = 'video_cache_v7'; 
+        let appStarted = false;
+
+        const tag = document.createElement('script');
+        tag.src = "https://www.youtube.com/iframe_api";
+        document.head.appendChild(tag);
+
+        function onYouTubeIframeAPIReady() {
+            player = new YT.Player('player', {
+                height: '100%', width: '100%', videoId: '',
+                playerVars: { 'playsinline': 1, 'controls': 0, 'modestbranding': 1, 'rel': 0 },
+                events: { 'onStateChange': onPlayerStateChange }
+            });
+        }
+
+        async function startApp() {
+            if(appStarted) return;
+            appStarted = true;
+            const splash = document.getElementById('splash-screen');
+            splash.classList.add('splash-fade-out');
+            setTimeout(() => { splash.style.display = 'none'; }, 600);
+            
+            let apiKey = MY_API_KEY || localStorage.getItem('yt_api_key');
+            if (apiKey) checkAndFetchList(apiKey);
+        }
+
+        function switchTab(tabId) {
+            ['view-player', 'view-links', 'view-edit'].forEach(id => document.getElementById(id).classList.add('hidden'));
+            document.getElementById('view-' + tabId).classList.remove('hidden');
+
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.replace('text-white', 'text-white/30'));
+            document.getElementById('nav-' + tabId).classList.replace('text-white/30', 'text-white');
+        }
+
+        async function checkAndFetchList(apiKey) {
+            const cachedData = localStorage.getItem(CACHE_KEY);
+            const lastFetch = localStorage.getItem('last_fetch_time');
+            const now = Date.now();
+
+            if (cachedData && lastFetch && (now - lastFetch < UPDATE_INTERVAL)) {
+                playlist = JSON.parse(cachedData);
+                updateApiStatus("CACHED");
+                renderPlaylist();
+                if(playlist.length > 0) playAt(0, true);
+            } else {
+                await fetchFullPlaylist(apiKey);
+            }
+        }
+
+        function updateApiStatus(text) {
+            const el = document.getElementById('api-status-text');
+            if(el) el.innerText = text;
+        }
+
+        async function fetchFullPlaylist(apiKey) {
+            updateApiStatus("UPDATING...");
+            try {
+                const chRes = await fetch(`https://www.googleapis.com/youtube/v3/channels?part=contentDetails&forHandle=${TARGET_HANDLE}&key=${apiKey}`);
+                const chData = await chRes.json();
+                const uploadsListId = chData.items[0].contentDetails.relatedPlaylists.uploads;
+
+                const plRes = await fetch(`https://www.googleapis.com/youtube/v3/playlistItems?part=snippet,contentDetails&maxResults=50&playlistId=${uploadsListId}&key=${apiKey}`);
+                const plData = await plRes.json();
+                const videoIds = plData.items.map(i => i.contentDetails.videoId).join(',');
+
+                const vRes = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=contentDetails,snippet&id=${videoIds}&key=${apiKey}`);
+                const vData = await vRes.json();
+
+                playlist = vData.items
+                    .filter(v => v.contentDetails.duration.includes('M') || v.contentDetails.duration.includes('H'))
+                    .map(v => ({
+                        id: v.id, title: v.snippet.title, thumb: v.snippet.thumbnails.medium.url,
+                        duration: parseISO8601(v.contentDetails.duration)
+                    }));
+
+                localStorage.setItem(CACHE_KEY, JSON.stringify(playlist));
+                localStorage.setItem('last_fetch_time', Date.now());
+                updateApiStatus("UPDATED");
+                renderPlaylist();
+                if(playlist.length > 0) playAt(0, true);
+            } catch (e) { updateApiStatus("ERROR"); }
+        }
+
+        function renderPlaylist() {
+            const container = document.getElementById('playlist-container');
+            container.innerHTML = playlist.map((item, i) => `
+                <div id="track-${i}" onclick="playAt(${i})" class="flex items-center gap-4 mb-3 p-3 rounded-2xl active:scale-[0.98] transition-all cursor-pointer ${i === currentIndex ? 'bg-white/10' : 'bg-transparent'}">
+                    <img src="${item.thumb}" class="w-24 aspect-video object-cover rounded-xl shadow-lg">
+                    <div class="flex-1 min-w-0">
+                        <div class="text-[13px] font-bold truncate ${i === currentIndex ? 'text-white' : 'text-white/60'}">${item.title}</div>
+                        <div class="text-[9px] text-white/30 mt-1 font-bold tracking-widest uppercase">Track ${i+1} • ${item.duration}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function playAt(index, autoPlay = true) {
+            if(!player || !player.loadVideoById) return; 
+            currentIndex = index;
+            if (autoPlay) player.loadVideoById(playlist[currentIndex].id);
+            else player.cueVideoById(playlist[currentIndex].id);
+            
+            renderPlaylist();
+
+            setTimeout(() => {
+                const activeElement = document.getElementById('track-' + index);
+                if (activeElement) {
+                    activeElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }, 100);
+        }
+
+        function togglePlay() { player.getPlayerState() === 1 ? player.pauseVideo() : player.playVideo(); }
+        function nextVideo() { currentIndex = (currentIndex + 1) % playlist.length; playAt(currentIndex); }
+        function prevVideo() { currentIndex = (currentIndex - 1 + playlist.length) % playlist.length; playAt(currentIndex); }
+
+        function toggleShuffle() {
+            isShuffle = !isShuffle;
+            document.getElementById('btn-shuffle').classList.toggle('text-white', isShuffle);
+            document.getElementById('btn-shuffle').classList.toggle('text-white/40', !isShuffle);
+        }
+
+        function toggleRepeat() {
+            repeatMode = (repeatMode + 1) % 3;
+            const btn = document.getElementById('btn-repeat');
+            const ind = document.getElementById('repeat-1-indicator');
+            btn.classList.toggle('text-white', repeatMode > 0);
+            btn.classList.toggle('text-white/40', repeatMode === 0);
+            ind.classList.toggle('hidden', repeatMode !== 2);
+        }
+
+        function onPlayerStateChange(e) {
+            const iconPlay = document.getElementById('icon-play');
+            const iconPause = document.getElementById('icon-pause');
+            if (e.data === 1) {
+                iconPlay.classList.add('hidden'); iconPause.classList.remove('hidden');
+                updateTick();
+            } else {
+                iconPlay.classList.remove('hidden'); iconPause.classList.add('hidden');
+            }
+            if (e.data === 0) nextVideo();
+        }
+
+        function updateTick() {
+            const loop = setInterval(() => {
+                if (player.getPlayerState() !== 1) return clearInterval(loop);
+                const curr = player.getCurrentTime();
+                const total = player.getDuration();
+                document.getElementById('current-time').innerText = formatSeconds(curr);
+                document.getElementById('duration-total').innerText = formatSeconds(total);
+                document.getElementById('seek-bar').value = (curr / total) * 100 || 0;
+            }, 500);
+        }
+
+        document.getElementById('seek-bar').addEventListener('input', function() {
+            if(player && player.getDuration) player.seekTo(player.getDuration() * (this.value / 100));
+        });
+
+        function parseISO8601(duration) {
+            const match = duration.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
+            const h = parseInt(match[1] || 0), m = parseInt(match[2] || 0), s = parseInt(match[3] || 0);
+            return formatSeconds(h * 3600 + m * 60 + s);
+        }
+
+        function formatSeconds(sec) {
+            const m = Math.floor(sec / 60), s = Math.floor(sec % 60);
+            return `${m}:${s.toString().padStart(2, '0')}`;
+        }
     </script>
 
 </body>
