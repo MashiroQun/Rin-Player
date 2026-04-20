@@ -160,20 +160,7 @@
 
     </main>
 
-    <!-- 修正：ナビゲーションバー（下部のセーフエリア対応を完璧に分離） -->
-    <nav class="flex-shrink-0 w-full bg-black/10 border-t border-white/5 safe-bottom z-50">
-        <div class="flex justify-around items-center h-14 px-6 max-w-md mx-auto">
-            <button onclick="switchTab('player')" id="nav-player" class="nav-btn text-white transition-all active:scale-95">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
-            </button>
-            <button onclick="switchTab('links')" id="nav-links" class="nav-btn text-white/30 transition-all active:scale-95">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-            </button>
-            <button onclick="switchTab('edit')" id="nav-edit" class="nav-btn text-white/30 transition-all active:scale-95">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>
-            </button>
-        </div>
-    </nav>
+    height: 100dvh; /* 優先的に dvh を使う */
 
     <script>
         const MY_API_KEY = ""; // ソースに直接キーを持たせる場合はここに記載
@@ -383,6 +370,15 @@
             const m = Math.floor(sec / 60), s = Math.floor(sec % 60);
             return `${m}:${s.toString().padStart(2, '0')}`;
         }
+        // Safe Area 動的調整（最小限）
+function fixBottomNav() {
+    const nav = document.querySelector('nav');
+    if (nav) {
+        nav.style.height = `calc(56px + env(safe-area-inset-bottom, 0px))`;
+    }
+}
+window.addEventListener('resize', fixBottomNav);
+window.addEventListener('orientationchange', () => setTimeout(fixBottomNav, 200));
     </script>
 </body>
 </html>
