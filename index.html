@@ -76,9 +76,9 @@
         </div>
     </div>
 
-    <main class="flex-1 flex flex-col w-full h-full bg-[#2C3D85] pb-[calc(70px+env(safe-area-inset-bottom))]">
+    <main class="flex-1 flex flex-col w-full bg-[#2C3D85] pb-[calc(70px+env(safe-area-inset-bottom))]">
         <!-- プレイヤー画面 -->
-        <section id="view-player" class="flex flex-col w-full h-full min-h-0">
+        <section id="view-player" class="flex flex-col w-full h-full min-h-0 overflow-hidden">
             <div class="w-full flex-shrink-0 z-20 bg-[#2C3D85]">
                 
                 <!-- ヘッダー（上部のセーフエリア対応） -->
@@ -125,8 +125,7 @@
             </div>
 
             <!-- リストがナビバーに隠れないよう、pb-6 でリスト最下部にも余白を持たせる -->
-            <div class="flex-1 overflow-y-auto px-3 bg-[#374892] min-h-0" id="playlist-container"></div>
-        </section>
+            <div class="flex-1 overflow-y-auto px-3 bg-[#374892] min-h-0" id="playlist-container"></div>        </section>
 
         <!-- リンク画面 -->
         <section id="view-links" class="h-full hidden flex flex-col items-center justify-center p-8 w-full">
