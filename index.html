@@ -13,7 +13,7 @@
     
     <link rel="stylesheet" href="/style.css">
 </head>
-<body class="flex flex-col h-[100dvh]">
+    <body class="flex flex-col" style="height: calc(var(--vh, 1dvh) * 100);">
 
     <div id="splash-screen" class="fixed inset-0 z-[9999] flex flex-col items-center justify-center transition-all" style="background: var(--app-bg);" onclick="startApp()">
         <div class="relative w-32 h-32 mb-8 animate-float">
@@ -130,6 +130,14 @@
                 events: { 'onStateChange': onPlayerStateChange }
             });
         }
+        // ビューポート高さをCSS変数で管理（iOS/iPad対策）
+function setVH() {
+    document.documentElement.style.setProperty('--vh', `${window.innerHeight * 0.01}px`);
+}
+window.addEventListener('resize', setVH);
+window.addEventListener('orientationchange', setVH);
+setVH(); // 初回実行
+
 
         async function startApp() {
             if(appStarted) return;
