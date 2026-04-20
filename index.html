@@ -16,19 +16,18 @@
     
     <style>
         :root { --app-bg: #2C3D85; }
+        
         body { 
             background: var(--app-bg); 
             color: #fff; 
-            overflow: hidden; 
             margin: 0;
-            height: 100dvh;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             -webkit-tap-highlight-color: transparent;
         }
 
-        /* Safe Areaの分離（ズレ問題の解決の要） */
-        .safe-top { padding-top: max(env(safe-area-inset-top), 20px); }
-        .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom), 16px); }
+        /* 修正の要：calc()を用いて確実に余白を計算し、めり込みを防ぐ */
+        .safe-top { padding-top: calc(env(safe-area-inset-top) + 8px); }
+        .safe-bottom { padding-bottom: calc(env(safe-area-inset-bottom) + 8px); }
 
         input[type="range"] {
             -webkit-appearance: none;
@@ -64,7 +63,8 @@
         }
     </style>
 </head>
-<body class="flex flex-col h-[100dvh]">
+<!-- 修正：fixed inset-0 を使用して画面全体に完全に固定し、はみ出しを根絶 -->
+<body class="fixed inset-0 flex flex-col overflow-hidden">
 
     <!-- スプラッシュ画面 -->
     <div id="splash-screen" class="fixed inset-0 z-[9999] flex flex-col items-center justify-center transition-all" style="background: var(--app-bg);" onclick="startApp()">
@@ -77,15 +77,15 @@
         </div>
     </div>
 
-    <main class="flex-1 overflow-hidden flex flex-col">
+    <main class="flex-1 overflow-hidden flex flex-col w-full h-full">
         
         <!-- プレイヤー画面 -->
         <section id="view-player" class="h-full flex flex-col w-full">
             <div class="w-full flex-shrink-0 z-20">
                 
-                <!-- 【修正】ヘッダー部分：セーフエリアと高さを分離 -->
+                <!-- ヘッダー（上部のセーフエリア対応） -->
                 <div class="w-full bg-black/10 safe-top">
-                    <div class="relative flex items-center justify-center h-16">
+                    <div class="relative flex items-center justify-center h-14">
                         <div class="absolute bottom-0 translate-y-1/4 left-6 z-30">
                             <img src="/character.png" class="w-14 h-14 object-cover rounded-full border-[3px] shadow-xl" style="border-color: var(--app-bg);">
                         </div>
@@ -126,7 +126,8 @@
                 </div>
             </div>
 
-            <div class="flex-1 overflow-y-auto px-4 pb-4" id="playlist-container"></div>
+            <!-- リストがナビバーに隠れないよう、pb-6 でリスト最下部にも余白を持たせる -->
+            <div class="flex-1 overflow-y-auto px-4 pb-6" id="playlist-container"></div>
         </section>
 
         <!-- リンク画面 -->
@@ -140,8 +141,8 @@
         </section>
 
         <!-- 設定・APIキー画面 -->
-        <section id="view-edit" class="h-full hidden flex flex-col p-8 pt-12 w-full overflow-y-auto">
-            <h2 class="text-lg font-bold mb-6 tracking-widest text-white/70 uppercase">設定</h2>
+        <section id="view-edit" class="h-full hidden flex flex-col p-8 safe-top w-full overflow-y-auto">
+            <h2 class="text-lg font-bold mt-4 mb-6 tracking-widest text-white/70 uppercase">設定</h2>
             
             <div class="bg-black/20 p-4 rounded-2xl border border-white/5 mb-6">
                 <div class="text-[10px] text-white/40 mb-1 font-bold uppercase tracking-tighter">システムステータス</div>
@@ -159,9 +160,9 @@
 
     </main>
 
-    <!-- ナビゲーション（ここも親要素でセーフエリア確保） -->
+    <!-- 修正：ナビゲーションバー（下部のセーフエリア対応を完璧に分離） -->
     <nav class="flex-shrink-0 w-full bg-black/10 border-t border-white/5 safe-bottom z-50">
-        <div class="flex justify-around items-center h-16 px-6 max-w-md mx-auto">
+        <div class="flex justify-around items-center h-14 px-6 max-w-md mx-auto">
             <button onclick="switchTab('player')" id="nav-player" class="nav-btn text-white transition-all active:scale-95">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
             </button>
@@ -175,12 +176,12 @@
     </nav>
 
     <script>
-        const MY_API_KEY = ""; // 初期キーを持たせる場合はここに記載
+        const MY_API_KEY = ""; // ソースに直接キーを持たせる場合はここに記載
         let player, playlist =[], currentIndex = 0;
         let isShuffle = false, repeatMode = 0; 
         const TARGET_HANDLE = '@r_____in__';
         const UPDATE_INTERVAL = 24 * 60 * 60 * 1000;
-        const CACHE_KEY = 'video_cache_v8'; 
+        const CACHE_KEY = 'video_cache_v9'; 
         let appStarted = false;
 
         // PWA ServiceWorkerの登録
@@ -220,7 +221,7 @@
                 checkAndFetchList(apiKey);
             } else {
                 updateApiStatus("APIキー未設定");
-                switchTab('edit'); // 未設定なら設定画面に飛ばす
+                switchTab('edit'); 
             }
         }
 
