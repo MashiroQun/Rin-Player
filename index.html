@@ -163,7 +163,8 @@
     <!-- ここにナビゲーションバーを追加 -->
         <nav class="bg-black/20 backdrop-blur-md w-full">
 
-        <div class="flex justify-around items-start w-full px-5 pt-6 pb-8">
+        <div class="flex justify-around items-start w-full px-5 pt-4 pb-[calc(env(safe-area-inset-bottom)+16px)]">
+
             <!-- プレイヤー タブ -->
             <button id="nav-player" onclick="switchTab('player')" class="nav-btn text-white flex flex-col items-center justify-center w-14 active:scale-95 transition">
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
