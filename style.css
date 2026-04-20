@@ -12,13 +12,38 @@ body {
     overflow: hidden; 
     margin: 0;
     /* 修正：高さを動的ビューポートに固定 */
-    height: calc(var(--vh, 1dvh) * 100);
+    height: 100dvh; /* 優先的に dvh を使う */
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
+safe-bottom {
+    padding-bottom: max(12px, env(safe-area-inset-bottom, 12px));
+}
 /* Safe Areaの調整：ヘッダーなどで使用 */
 .safe-top { padding-top: max(0px, env(safe-area-inset-top)); }
-.safe-bottom { padding-bottom: max(0px, env(safe-area-inset-bottom)); }
+safe-bottom {
+    padding-bottom: max(12px, env(safe-area-inset-bottom, 12px));
+}
+
+/* 新規追加：ボトムナビ専用（これが一番効く） */
+nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 50;
+    background: rgba(0, 0, 0, 0.1); /* または var(--app-bg) に近い色で濃くしてもOK */
+    border-top: 1px solid rgba(255,255,255,0.05);
+    
+    /* 高さを安全領域含めて確保 */
+    height: calc(56px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    padding-bottom: constant(safe-area-inset-bottom, 0px); /* 古いiOS用 */
+}
+
+nav > div {
+    height: 56px; /* アイコン部分の高さを固定 */
+}
 
 /* シークバーの見た目調整 */
 input[type="range"] {
