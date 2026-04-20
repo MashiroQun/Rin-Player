@@ -26,8 +26,8 @@
         }
 
         /* 修正の要：calc()を用いて確実に余白を計算し、めり込みを防ぐ */
-        .safe-top { padding-top: calc(env(safe-area-inset-top) + 8px); }
-        .safe-bottom { padding-bottom: calc(env(safe-area-inset-bottom) + 8px); }
+        .safe-top { padding-top: calc(env(safe-area-inset-top) + 3px); }
+        .safe-bottom { padding-bottom: calc(env(safe-area-inset-bottom) + 3px); }
 
         input[type="range"] {
             -webkit-appearance: none;
@@ -127,7 +127,7 @@
             </div>
 
             <!-- リストがナビバーに隠れないよう、pb-6 でリスト最下部にも余白を持たせる -->
-            <div class="flex-1 overflow-y-auto pb-100 bg-[#374892]" id="playlist-container"></div>
+            <div class="flex-1 overflow-y-auto pb-6 bg-[#374892]" id="playlist-container"></div>
         </section>
 
         <!-- リンク画面 -->
