@@ -48,11 +48,19 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.3);
         }
 
-        @keyframes float {
+        /* 浮遊アニメーションを大きく（-20px） */
+        @keyframes float-large {
             0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-8px); }
+            50% { transform: translateY(-20px); }
         }
-        .animate-float { animation: float 4s ease-in-out infinite; }
+        .animate-float-large { animation: float-large 3.5s ease-in-out infinite; }
+
+        /* アイコンの背後で青くぼんやり光るアニメーション */
+        @keyframes glow-pulse {
+            0%, 100% { box-shadow: 0 0 20px 5px rgba(59, 130, 246, 0.3); }
+            50% { box-shadow: 0 0 60px 15px rgba(59, 130, 246, 0.6); }
+        }
+        .icon-glow { animation: glow-pulse 4s ease-in-out infinite; }
 
         .splash-fade-out { 
             opacity: 0; 
@@ -63,13 +71,16 @@
     </style>
 </head>
 <body class="fixed inset-0 flex flex-col overflow-hidden bg-black">
-    <div class="w-full max-w-md mx-auto h-full flex flex-col relative bg-[#2C3D85] shadow-2xl overflow-hidden">
+    <div class="w-full max-w-md mx-auto h-[100dvh] flex flex-col relative bg-[#2C3D85] shadow-2xl overflow-hidden">
 
-        <div id="splash-screen" class="absolute inset-0 z-[9999] flex flex-col items-center justify-center transition-all" style="background: var(--app-bg);" onclick="hideSplashScreen()">
-            <div class="relative w-40 h-40 mb-8 animate-float">
-                <img src="/character.png" alt="アイコン" class="w-full h-full object-cover rounded-full shadow-2xl border-[3px] border-white/10" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'100\' height=\'100\'%3E%3Crect width=\'100\' height=\'100\' fill=\'%23374892\'/%3E%3C/svg%3E'">
+        <div id="splash-screen" class="absolute inset-0 z-[9999] flex flex-col items-center justify-center transition-all" style="background: var(--app-bg);" onclick="startApp()">
+            <div class="relative w-40 h-40 mb-12 animate-float-large">
+                <img src="/character.png" alt="アイコン" class="w-full h-full object-cover rounded-full z-10 relative border-[3px] border-white/10 shadow-2xl" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'100\' height=\'100\'%3E%3Crect width=\'100\' height=\'100\' fill=\'%23374892\'/%3E%3C/svg%3E'">
+                <div class="absolute inset-0 rounded-full icon-glow"></div>
             </div>
+            
             <h1 class="text-2xl font-bold tracking-[0.1em] text-white mb-4 text-center z-10 drop-shadow-lg">Rin☪︎ Music Player</h1>
+            
             <div id="splash-text" class="absolute bottom-24 animate-pulse text-white/70 text-[10px] font-bold tracking-[0.2em] z-10">
                 - 読み込み中 -
             </div>
@@ -80,7 +91,7 @@
             <section id="view-player" class="flex-1 flex flex-col w-full min-h-0 overflow-hidden">
                 <div class="w-full flex-shrink-0 z-20 bg-[#2C3D85]">
                     
-                    <div class="w-full bg-[#1f2b5e] safe-top pb-3">
+                    <div class="w-full bg-[#1f2b5e] safe-top pb-3 border-b border-white/5">
                         <div class="relative flex items-center justify-center h-14">
                             <div class="absolute bottom-0 translate-y-1/4 left-6 z-30">
                                 <img src="/character.png" class="w-16 h-16 object-cover rounded-full border-[3px] shadow-xl" style="border-color: #1f2b5e;" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'100\' height=\'100\'%3E%3Crect width=\'100\' height=\'100\' fill=\'%23374892\'/%3E%3C/svg%3E'">
@@ -122,7 +133,7 @@
                     </div>
                 </div>
 
-                <div class="flex-1 overflow-y-auto px-5 bg-[#374892] min-h-0 pt-2 pb-4" id="playlist-container"></div>   
+                <div class="flex-1 overflow-y-auto px-5 bg-[#374892] min-h-0 pt-2 pb-12" id="playlist-container"></div>   
             </section>
 
             <section id="view-links" class="h-full hidden flex flex-col w-full min-h-0 bg-[#374892]">
@@ -211,7 +222,12 @@
             player = new YT.Player('player', {
                 height: '100%', width: '100%', videoId: '',
                 playerVars: { 'playsinline': 1, 'controls': 0, 'modestbranding': 1, 'rel': 0 },
-                events: { 'onStateChange': onPlayerStateChange, 'onReady': startApp }
+                events: { 
+                    'onStateChange': onPlayerStateChange, 
+                    'onReady': () => {
+                        document.getElementById('splash-text').innerText = "- タップして開始 -";
+                    }
+                }
             });
         }
 
@@ -228,6 +244,17 @@
 
         async function startApp() {
             if(appStarted) return;
+            
+            // iOSの音声ロックを解除するためのテクニック
+            if(player && player.playVideo) {
+                player.mute();
+                player.playVideo();
+                setTimeout(() => {
+                    player.pauseVideo();
+                    player.unMute();
+                }, 100);
+            }
+
             appStarted = true;
             hideSplashScreen();
             
@@ -256,6 +283,7 @@
             splash.classList.remove('splash-fade-out');
             splash.style.display = 'flex';
             document.getElementById('splash-text').innerText = "- タップして復帰 -";
+            appStarted = false; // 再タップで再開できるようにリセット
         }
 
         // バックグラウンド復帰時の処理
@@ -268,7 +296,7 @@
                 
                 if (apiKey) checkDailyUpdate(apiKey);
                 
-                // 30分経過 (1,800,000ミリ秒) かつ 再生/一時停止中でないならスプラッシュ表示
+                // 30分経過 (1,800,000ミリ秒) かつ 再生(1)/一時停止(2)中でないならスプラッシュ表示
                 if (backgroundTime > 0 && (Date.now() - backgroundTime) >= 1800000) {
                     const state = player && player.getPlayerState ? player.getPlayerState() : -1;
                     if (state !== 1 && state !== 2) {
@@ -344,7 +372,7 @@
                 const borderStyle = isActive ? 'border-white/40 bg-white/10' : 'border-transparent bg-white/5';
                 return `
                     <div id="track-${i}" onclick="playAt(${i})" 
-                        class="flex items-center gap-4 mb-3 p-3 rounded-2xl h-20 transition-all cursor-pointer border-2 ${borderStyle}">
+                        class="flex items-center gap-3 mb-3 p-2.5 rounded-2xl h-[72px] transition-all cursor-pointer border-2 ${borderStyle}">
                         <img src="${item.thumb}" class="h-full aspect-video object-cover rounded-lg shadow-md flex-shrink-0">
                         <div class="flex-1 min-w-0">
                             <div class="text-[13px] font-bold truncate ${isActive ? 'text-white' : 'text-white/60'}">${item.title}</div>
