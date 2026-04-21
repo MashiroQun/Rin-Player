@@ -72,8 +72,6 @@
     </style>
 </head>
 <body class="fixed inset-0 flex flex-col overflow-hidden bg-black">
-    <div class="flex-1 w-full max-w-md mx-auto flex flex-col relative bg-[#2C3D85] shadow-2xl overflow-hidden">
-
         <div id="splash-screen" class="absolute inset-0 z-[9999] flex flex-col items-center justify-center transition-all" style="background: var(--app-bg);" onclick="startApp()">
             <div class="relative w-40 h-40 mb-12 animate-float-large">
                 <img src="/character.png" alt="アイコン" class="w-full h-full object-cover rounded-full z-10 relative border-[3px] border-white/10 shadow-2xl" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'100\' height=\'100\'%3E%3Crect width=\'100\' height=\'100\' fill=\'%23374892\'/%3E%3C/svg%3E'">
@@ -239,41 +237,22 @@
         }
 
         async function startApp() {
-            if(appStarted) return;
-            
-            if (player) {
-                if (typeof player.playVideo === 'function') {
-                    try {
-                        player.mute();
-                        player.playVideo();
-                        setTimeout(() => {
-                            player.pauseVideo();
-                            player.unMute();
-                        }, 100);
-                    } catch (e) {
-                        console.log("音声ロック解除をスキップ");
-                    }
-                }
-            }
+  if (appStarted) return;
+  appStarted = true;
+  hideSplashScreen();
 
-            appStarted = true;
-            hideSplashScreen();
-            
-            const savedKey = localStorage.getItem('yt_api_key');
-            let apiKey = savedKey;
-            
-            if (MY_API_KEY !== "") {
-                apiKey = MY_API_KEY;
-            }
-            
-            if (apiKey) {
-                document.getElementById('api-key-input').value = apiKey;
-                await checkDailyUpdate(apiKey);
-            } else {
-                switchTab('edit'); 
-            }
-            updateStatusUI();
-        }
+  const savedKey = localStorage.getItem('yt_api_key');
+  let apiKey = (MY_API_KEY !== "") ? MY_API_KEY : savedKey;
+
+  if (apiKey) {
+    document.getElementById('api-key-input').value = apiKey;
+    await checkDailyUpdate(apiKey);
+  } else {
+    switchTab('edit');
+  }
+  updateStatusUI();
+}
+
 
         function hideSplashScreen() {
             const splash = document.getElementById('splash-screen');
