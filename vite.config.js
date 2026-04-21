@@ -13,7 +13,7 @@ export default defineConfig({
         short_name: 'Rin Music',
         description: 'Rin☪︎ Official Music Player PWA',
         start_url: '/',
-        display: 'fullscreen', // iOSでは実質 standalone 動作になります
+        display: 'standalone',
         background_color: '#2C3D85',
         theme_color: '#2C3D85',
         lang: 'ja',
