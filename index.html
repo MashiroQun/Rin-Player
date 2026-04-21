@@ -15,436 +15,314 @@
     <script src="https://cdn.tailwindcss.com"></script>
     
     <style>
-        :root { --app-bg: #1f2b5e; }
+        :root { --app-bg: #1f2b5e; --vh: 1vh; }
         
-        body { 
+        /* 言霊チューナー方式の鉄壁固定 */
+        html, body { 
+            margin: 0; padding: 0; width: 100%; 
+            height: calc(var(--vh, 1vh) * 100); 
+            position: fixed; overflow: hidden; 
             background: var(--app-bg); 
             color: #fff; 
-            margin: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             -webkit-tap-highlight-color: transparent;
         }
 
-        /* セーフエリアの余白をcalcで確実に確保 */
         .safe-top { padding-top: calc(env(safe-area-inset-top) + 8px); }
         .safe-bottom { padding-bottom: calc(env(safe-area-inset-bottom) + 12px); }
 
-        input[type="range"] {
-            -webkit-appearance: none;
-            background: transparent;
-            cursor: pointer;
-        }
-        input[type="range"]::-webkit-slider-runnable-track { 
-            background: rgba(255,255,255,0.2); 
-            border-radius: 4px; 
-            height: 4px; 
-        }
-        input[type="range"]::-webkit-slider-thumb { 
-            -webkit-appearance: none; 
-            background: #fff; 
-            width: 14px; 
-            height: 14px; 
-            border-radius: 50%; 
-            margin-top: -5px; 
-            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-        }
+        /* カスタムスライダー */
+        input[type="range"] { -webkit-appearance: none; background: transparent; cursor: pointer; }
+        input[type="range"]::-webkit-slider-runnable-track { background: rgba(255,255,255,0.2); border-radius: 4px; height: 4px; }
+        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; background: #fff; width: 14px; height: 14px; border-radius: 50%; margin-top: -5px; box-shadow: 0 2px 4px rgba(0,0,0,0.3); }
 
-        /* 浮遊アニメーションを大きく（-20px） */
-        @keyframes float-large {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-20px); }
-        }
+        /* アニメーション：浮遊 */
+        @keyframes float-large { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-20px); } }
         .animate-float-large { animation: float-large 3.5s ease-in-out infinite; }
 
-        /* アイコンの背後で青くぼんやり光るアニメーション */
-        @keyframes glow-pulse {
-            0%, 100% { box-shadow: 0 0 20px 5px rgba(59, 130, 246, 0.3); }
-            50% { box-shadow: 0 0 60px 15px rgba(59, 130, 246, 0.6); }
-        }
+        /* アニメーション：青い光 */
+        @keyframes glow-pulse { 0%, 100% { box-shadow: 0 0 20px 5px rgba(59, 130, 246, 0.3); } 50% { box-shadow: 0 0 60px 15px rgba(59, 130, 246, 0.6); } }
         .icon-glow { animation: glow-pulse 4s ease-in-out infinite; }
 
-        .splash-fade-out { 
-            opacity: 0; 
-            pointer-events: none; 
-            transform: scale(1.05); 
-            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1); 
-        }
+        /* スプラッシュ消滅 */
+        .splash-fade-out { opacity: 0; pointer-events: none; transform: scale(1.05); transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
     </style>
 </head>
-<body class="fixed inset-0 flex flex-col overflow-hidden bg-black">
-        <div id="splash-screen" class="absolute inset-0 z-[9999] flex flex-col items-center justify-center transition-all" style="background: var(--app-bg);" onclick="startApp()">
-            <div class="relative w-40 h-40 mb-12 animate-float-large">
-                <img src="/character.png" alt="アイコン" class="w-full h-full object-cover rounded-full z-10 relative border-[3px] border-white/10 shadow-2xl" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'100\' height=\'100\'%3E%3Crect width=\'100\' height=\'100\' fill=\'%23374892\'/%3E%3C/svg%3E'">
-                <div class="absolute inset-0 rounded-full icon-glow"></div>
-            </div>
-            
-            <h1 class="text-2xl font-bold tracking-[0.1em] text-white mb-4 text-center z-10 drop-shadow-lg">Rin☪︎ Music Player</h1>
-            
-            <div id="splash-text" class="absolute bottom-24 animate-pulse text-white/70 text-[10px] font-bold tracking-[0.2em] z-10">
-                - TAP TO START -
-            </div>
+<body class="flex flex-col">
+
+    <div id="splash-screen" class="absolute inset-0 z-[9999] flex flex-col items-center justify-center transition-all" style="background: var(--app-bg);" onclick="startApp()">
+        <div class="relative w-40 h-40 mb-12 animate-float-large">
+            <img src="/character.png" alt="アイコン" class="w-full h-full object-cover rounded-full z-10 relative border-[3px] border-white/10 shadow-2xl" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'100\' height=\'100\'%3E%3Crect width=\'100\' height=\'100\' fill=\'%23374892\'/%3E%3C/svg%3E'">
+            <div class="absolute inset-0 rounded-full icon-glow"></div>
         </div>
-
-        <main class="flex-1 flex flex-col w-full min-h-0">
-            
-            <section id="view-player" class="flex-1 flex flex-col w-full min-h-0 overflow-hidden">
-                <div class="w-full flex-shrink-0 z-20 bg-[#2C3D85]">
-                    
-                    <div class="w-full bg-[#1f2b5e] safe-top pb-3 border-b border-white/5">
-                        <div class="relative flex items-center justify-center h-14">
-                            <div class="absolute bottom-0 translate-y-1/4 left-6 z-30">
-                                <img src="/character.png" class="w-16 h-16 object-cover rounded-full border-[3px] shadow-xl" style="border-color: #1f2b5e;" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'100\' height=\'100\'%3E%3Crect width=\'100\' height=\'100\' fill=\'%23374892\'/%3E%3C/svg%3E'">
-                            </div>
-                            <h1 class="text-[17px] font-bold tracking-widest text-white/90 z-20">Rin☪︎ Music Player</h1>
-                        </div>
-                    </div>
-
-                    <div class="mt-4 px-5 mb-2">
-                        <div class="w-full aspect-video rounded-2xl overflow-hidden bg-black/50 shadow-2xl border border-white/10 relative pointer-events-none">
-                            <div id="player" class="absolute inset-0"></div>
-                        </div>
-                    </div>
-
-                    <div class="px-8 mb-2">
-                        <div class="flex justify-between text-[10px] text-white/60 font-mono mb-1.5 px-1 font-bold">
-                            <span id="current-time">0:00</span>
-                            <span id="duration-total">0:00</span>
-                        </div>
-                        <input type="range" id="seek-bar" value="0" step="0.1" class="w-full appearance-none bg-transparent">
-                    </div>
-
-                    <div class="flex justify-between items-center px-10 mb-2">
-                        <button onclick="toggleShuffle()" id="btn-shuffle" class="text-white/40 transition-all">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/></svg>
-                        </button>
-                        <div class="flex items-center gap-6">
-                            <button onclick="prevVideo()" class="text-white active:scale-90"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg></button>
-                            <button onclick="togglePlay()" id="play-pause-btn" class="w-10 h-10 bg-white rounded-full flex items-center justify-center active:scale-95 shadow-lg" style="color: var(--app-bg);">
-                                <svg id="icon-play" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-                                <svg id="icon-pause" class="hidden" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
-                            </button>
-                            <button onclick="nextVideo()" class="text-white active:scale-90"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg></button>
-                        </div>
-                        <button onclick="toggleRepeat()" id="btn-repeat" class="text-white/40 transition-all relative">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 1l4 4-4 4M3 11V9a4 4 0 014-4h14M7 23l-4-4 4-4M21 13v2a4 4 0 01-4 4H3"/></svg>
-                            <span id="repeat-1-indicator" class="hidden absolute -top-2 -right-2 text-[8px] font-bold bg-white rounded-full w-3.5 h-3.5 flex items-center justify-center shadow-md" style="color: var(--app-bg);">1</span>
-                        </button>
-                    </div>
-                </div>
-
-                <div class="flex-1 overflow-y-auto px-5 bg-[#374892] min-h-0 pt-2 pb-28" id="playlist-container"></div>   
-            </section>
-
-            <section id="view-links" class="h-full hidden flex flex-col w-full min-h-0 bg-[#374892]">
-                <div class="w-full flex-shrink-0 bg-[#1f2b5e] safe-top pb-3 border-b border-white/5">
-                    <div class="relative flex items-center justify-center h-14">
-                        <div class="absolute bottom-0 translate-y-1/4 left-6 z-30">
-                            <img src="/character.png" class="w-16 h-16 object-cover rounded-full border-[3px] shadow-xl" style="border-color: #1f2b5e;" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'100\' height=\'100\'%3E%3Crect width=\'100\' height=\'100\' fill=\'%23374892\'/%3E%3C/svg%3E'">
-                        </div>
-                        <h1 class="text-[17px] font-bold tracking-widest text-white/90 z-20 uppercase">Rin's LINKS</h1>
-                    </div>
-                </div>
-                
-                <div class="flex-1 flex flex-col items-center justify-center p-8 overflow-y-auto">
-                    <div class="grid grid-cols-1 gap-4 w-full max-w-xs">
-                        <a href="#" class="bg-white/5 p-4 rounded-2xl text-center font-bold border border-white/5 active:bg-white/10 transition text-white">X (Twitter)</a>
-                        <a href="#" class="bg-white/5 p-4 rounded-2xl text-center font-bold border border-white/5 active:bg-white/10 transition text-white">公式HP</a>
-                        <a href="#" class="bg-white/5 p-4 rounded-2xl text-center font-bold border border-white/5 active:bg-white/10 transition text-white">BOOTH</a>
-                    </div>
-                </div>
-            </section>
-
-            <section id="view-edit" class="h-full hidden flex flex-col w-full min-h-0 bg-[#374892]">
-                <div class="w-full flex-shrink-0 bg-[#1f2b5e] safe-top pb-3 border-b border-white/5">
-                    <div class="relative flex items-center justify-center h-14">
-                        <div class="absolute bottom-0 translate-y-1/4 left-6 z-30">
-                            <img src="/character.png" class="w-16 h-16 object-cover rounded-full border-[3px] shadow-xl" style="border-color: #1f2b5e;" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'100\' height=\'100\'%3E%3Crect width=\'100\' height=\'100\' fill=\'%23374892\'/%3E%3C/svg%3E'">
-                        </div>
-                        <h1 class="text-[17px] font-bold tracking-widest text-white/90 z-20 uppercase">APP SETTING</h1>
-                    </div>
-                </div>
-
-                <div class="flex-1 p-8 overflow-y-auto">
-                    <div class="bg-black/20 p-4 rounded-2xl border border-white/5 mb-6">
-                        <div class="text-[10px] text-white/40 mb-2 font-bold uppercase tracking-tighter">API STATUS</div>
-                        <div class="text-xs font-bold text-white/90 mb-1">リスト最終更新:</div>
-                        <div class="text-sm font-mono text-white/70 bg-black/30 p-2 rounded-lg" id="status-last-update">未取得</div>
-                        <div class="text-[10px] text-white/40 mt-3">※リストは毎日0:00以降に自動更新されます。手動更新はYouTube側への負荷軽減のため制限されています。</div>
-                    </div>
-
-                    <div class="bg-black/20 p-4 rounded-2xl border border-white/5">
-                        <label class="block text-[10px] text-white/40 mb-2 font-bold uppercase tracking-tighter">YouTube API KEY</label>
-                        <input type="password" id="api-key-input" placeholder="AIzaSy..." class="w-full bg-black/40 text-white text-sm px-3 py-3 rounded-xl border border-white/10 focus:outline-none focus:border-white/50 transition">
-                        <div class="text-[10px] text-white/40 mt-2">ソースコード内のキーが優先されます。</div>
-                    </div>
-                </div>
-            </section>
-
-        </main>
-
-        <nav class="w-full bg-[#1f2b5e] border-t border-white/5 safe-bottom">
-            <div class="flex justify-around items-end h-16 pt-2 pb-1">
-                <button id="nav-player" onclick="switchTab('player')" class="nav-btn text-white flex flex-col items-center active:scale-95 transition">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
-                    <span class="text-[9px] mt-1 font-bold tracking-tighter">PLAYER</span>
-                </button>
-                <button id="nav-links" onclick="switchTab('links')" class="nav-btn text-white/30 flex flex-col items-center active:scale-95 transition">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
-                    <span class="text-[9px] mt-1 font-bold tracking-tighter">LINKS</span>
-                </button>
-                <button id="nav-edit" onclick="switchTab('edit')" class="nav-btn text-white/30 flex flex-col items-center active:scale-95 transition">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
-                    <span class="text-[9px] mt-1 font-bold tracking-tighter">SETTING</span>
-                </button>
-            </div>
-        </nav>
+        <h1 class="text-2xl font-bold tracking-[0.1em] text-white mb-4 text-center z-10 drop-shadow-lg">Rin☪︎ Music Player</h1>
+        <div id="splash-text" class="absolute bottom-24 animate-pulse text-white/70 text-[10px] font-bold tracking-[0.2em] z-10">
+            - TAP TO START -
+        </div>
     </div>
 
-    <script>
-        const MY_API_KEY = "AIzaSyBQ5nPI4F-ATGGHXi5CmjAUCmpf05KPpZU";
-        let player, playlist =[], currentIndex = 0;
-        let isShuffle = false, repeatMode = 0; 
-        const TARGET_HANDLE = '@r_____in__';
-        const CACHE_KEY = 'video_cache_v9'; 
-        let appStarted = false;
-        let backgroundTime = 0;
-
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => { navigator.serviceWorker.register('/sw.js'); });
-        }
-
-        const tag = document.createElement('script');
-        tag.src = "https://www.youtube.com/iframe_api";
-        document.head.appendChild(tag);
-
-        function onYouTubeIframeAPIReady() {
-            player = new YT.Player('player', {
-                height: '100%', width: '100%', videoId: '',
-                playerVars: { 'playsinline': 1, 'controls': 0, 'modestbranding': 1, 'rel': 0 },
-                events: { 'onStateChange': onPlayerStateChange }
-            });
-        }
-
-        function getTodayString() {
-            const d = new Date();
-            return `${d.getFullYear()}-${(d.getMonth()+1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`;
-        }
-
-        function updateStatusUI() {
-            const lastDate = localStorage.getItem('last_fetch_datetime') || '未取得';
-            const el = document.getElementById('status-last-update');
-            if(el) el.innerText = lastDate;
-        }
-
-        async function startApp() {
-  if (appStarted) return;
-  appStarted = true;
-  hideSplashScreen();
-
-  const savedKey = localStorage.getItem('yt_api_key');
-  let apiKey = (MY_API_KEY !== "") ? MY_API_KEY : savedKey;
-
-  if (apiKey) {
-    document.getElementById('api-key-input').value = apiKey;
-    await checkDailyUpdate(apiKey);
-  } else {
-    switchTab('edit');
-  }
-  updateStatusUI();
-}
-
-
-        function hideSplashScreen() {
-            const splash = document.getElementById('splash-screen');
-            if(splash.style.display === 'none') return;
-            splash.classList.add('splash-fade-out');
-            setTimeout(() => { splash.style.display = 'none'; }, 600);
-        }
-
-        function showSplashScreen() {
-            const splash = document.getElementById('splash-screen');
-            splash.classList.remove('splash-fade-out');
-            splash.style.display = 'flex';
-            document.getElementById('splash-text').innerText = "- タップして復帰 -";
-            appStarted = false; // 再開できるようにリセット
-        }
-
-        // バックグラウンド復帰時の処理
-        document.addEventListener('visibilitychange', () => {
-            if (document.visibilityState === 'hidden') {
-                backgroundTime = Date.now();
-            } else if (document.visibilityState === 'visible') {
-                let apiKey = localStorage.getItem('yt_api_key');
-                if (MY_API_KEY !== "") apiKey = MY_API_KEY;
-                
-                if (apiKey) checkDailyUpdate(apiKey);
-                
-                // 30分経過 (1,800,000ミリ秒) かつ 再生(1)/一時停止(2)中でないならスプラッシュ表示
-                if (backgroundTime > 0 && (Date.now() - backgroundTime) >= 1800000) {
-                    const state = player && typeof player.getPlayerState === 'function' ? player.getPlayerState() : -1;
-                    if (state !== 1 && state !== 2) {
-                        showSplashScreen();
-                    }
-                }
-            }
-        });
-
-        async function checkDailyUpdate(apiKey) {
-            const cachedData = localStorage.getItem(CACHE_KEY);
-            const lastFetchDate = localStorage.getItem('last_fetch_date');
-            const today = getTodayString();
-
-            if (cachedData && lastFetchDate === today) {
-                playlist = JSON.parse(cachedData);
-                if(document.getElementById('playlist-container').innerHTML === "") {
-                    renderPlaylist();
-                    if(playlist.length > 0) playAt(0, false);
-                }
-            } else {
-                await fetchFullPlaylist(apiKey);
-            }
-        }
-
-        async function fetchFullPlaylist(apiKey) {
-            try {
-                const chRes = await fetch(`https://www.googleapis.com/youtube/v3/channels?part=contentDetails&forHandle=${TARGET_HANDLE}&key=${apiKey}`);
-                if (!chRes.ok) throw new Error("Network Error");
-                const chData = await chRes.json();
-                if (!chData.items) throw new Error("Channel Not Found");
-
-                const uploadsListId = chData.items[0].contentDetails.relatedPlaylists.uploads;
-                const plRes = await fetch(`https://www.googleapis.com/youtube/v3/playlistItems?part=snippet,contentDetails&maxResults=50&playlistId=${uploadsListId}&key=${apiKey}`);
-                const plData = await plRes.json();
-                const videoIds = plData.items.map(i => i.contentDetails.videoId).join(',');
-
-                const vRes = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=contentDetails,snippet&id=${videoIds}&key=${apiKey}`);
-                const vData = await vRes.json();
-
-                playlist = vData.items
-                    .filter(v => v.contentDetails.duration.includes('M') || v.contentDetails.duration.includes('H'))
-                    .map(v => ({
-                        id: v.id, title: v.snippet.title, thumb: v.snippet.thumbnails.medium.url,
-                        duration: parseISO8601(v.contentDetails.duration)
-                    }));
-
-                localStorage.setItem(CACHE_KEY, JSON.stringify(playlist));
-                localStorage.setItem('last_fetch_date', getTodayString());
-                
-                const now = new Date();
-                localStorage.setItem('last_fetch_datetime', `${now.getFullYear()}/${(now.getMonth()+1).toString().padStart(2, '0')}/${now.getDate().toString().padStart(2, '0')} ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`);
-                
-                updateStatusUI();
-                renderPlaylist();
-                if(playlist.length > 0) playAt(0, false);
-            } catch (e) { 
-                console.error(e);
-            }
-        }
-
-        function switchTab(tabId) {
-            ['view-player', 'view-links', 'view-edit'].forEach(id => document.getElementById(id).classList.add('hidden'));
-            document.getElementById('view-' + tabId).classList.remove('hidden');
-            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.replace('text-white', 'text-white/30'));
-            document.getElementById('nav-' + tabId).classList.replace('text-white/30', 'text-white');
-        }
-
-        function renderPlaylist() {
-            const container = document.getElementById('playlist-container');
-            container.innerHTML = playlist.map((item, i) => {
-                const isActive = i === currentIndex;
-                const borderStyle = isActive ? 'border-white/40 bg-white/10' : 'border-transparent bg-white/5';
-                return `
-                    <div id="track-${i}" onclick="playAt(${i})" class="flex items-center gap-3 mb-3 p-2.5 rounded-2xl h-[72px] transition-all cursor-pointer border-2 ${borderStyle}">
-                        <img src="${item.thumb}" class="h-full aspect-video object-cover rounded-md shadow-md flex-shrink-0">
-                        <div class="flex-1 min-w-0">
-                            <div class="text-[13px] font-bold truncate ${isActive ? 'text-white' : 'text-white/60'}">${item.title}</div>
-                            <div class="text-[9px] text-white/30 mt-1 font-bold tracking-widest uppercase">トラック ${i+1} • ${item.duration}</div>
-                        </div>
-                        ${isActive ? '<div class="w-2 h-2 bg-white rounded-full animate-pulse shadow-[0_0_8px_rgba(255,255,255,0.8)]"></div>' : ''}
-                    </div>
-                `;
-            }).join('');
-        }
-
-        function playAt(index, autoPlay = true) {
-            if(!player || !player.loadVideoById) return; 
-            currentIndex = index;
-            if (autoPlay) player.loadVideoById(playlist[currentIndex].id);
-            else player.cueVideoById(playlist[currentIndex].id);
-            
-            renderPlaylist();
-            setTimeout(() => {
-                const activeElement = document.getElementById('track-' + index);
-                if (activeElement) activeElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }, 100);
-        }
-
-        function togglePlay() { player.getPlayerState() === 1 ? player.pauseVideo() : player.playVideo(); }
-        function nextVideo() { currentIndex = (currentIndex + 1) % playlist.length; playAt(currentIndex); }
-        function prevVideo() { currentIndex = (currentIndex - 1 + playlist.length) % playlist.length; playAt(currentIndex); }
-
-        function toggleShuffle() {
-            isShuffle = !isShuffle;
-            document.getElementById('btn-shuffle').classList.toggle('text-white', isShuffle);
-            document.getElementById('btn-shuffle').classList.toggle('text-white/40', !isShuffle);
-        }
-
-        function toggleRepeat() {
-            repeatMode = (repeatMode + 1) % 3;
-            const btn = document.getElementById('btn-repeat');
-            const ind = document.getElementById('repeat-1-indicator');
-            btn.classList.toggle('text-white', repeatMode > 0);
-            btn.classList.toggle('text-white/40', repeatMode === 0);
-            ind.classList.toggle('hidden', repeatMode !== 2);
-        }
-
-        function onPlayerStateChange(e) {
-            const iconPlay = document.getElementById('icon-play');
-            const iconPause = document.getElementById('icon-pause');
-            if (e.data === 1) {
-                iconPlay.classList.add('hidden'); iconPause.classList.remove('hidden');
-                updateTick();
-            } else {
-                iconPlay.classList.remove('hidden'); iconPause.classList.add('hidden');
-            }
-            if (e.data === 0) nextVideo();
-        }
-
-        function updateTick() {
-            const loop = setInterval(() => {
-                if (player.getPlayerState() !== 1) return clearInterval(loop);
-                const curr = player.getCurrentTime();
-                const total = player.getDuration();
-                document.getElementById('current-time').innerText = formatSeconds(curr);
-                document.getElementById('duration-total').innerText = formatSeconds(total);
-                document.getElementById('seek-bar').value = (curr / total) * 100 || 0;
-            }, 500);
-        }
-
-        document.getElementById('seek-bar').addEventListener('input', function() {
-            if(player && player.getDuration) player.seekTo(player.getDuration() * (this.value / 100));
-        });
-
-        function parseISO8601(duration) {
-            const match = duration.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
-            const h = parseInt(match[1] || 0), m = parseInt(match[2] || 0), s = parseInt(match[3] || 0);
-            return formatSeconds(h * 3600 + m * 60 + s);
-        }
-
-        function formatSeconds(sec) {
-            const m = Math.floor(sec / 60), s = Math.floor(sec % 60);
-            return `${m}:${s.toString().padStart(2, '0')}`;
-        }
+    <main class="flex-1 flex flex-col w-full min-h-0">
         
-        window.addEventListener('resize', () => {
-// 0.1秒待ってから、bodyの高さを一瞬だけ変えて戻すことで再描画を強制する
-setTimeout(() => {
-document.body.style.display = 'none';
-document.body.offsetHeight; // 読み取りを発生させてリフローを強制
-document.body.style.display = 'flex';
-}, 100);
-});
+        <section id="view-player" class="flex-1 flex flex-col w-full min-h-0 overflow-hidden">
+            <div class="w-full flex-shrink-0 z-20 bg-[#2C3D85]">
+                <div class="w-full bg-[#1f2b5e] safe-top pb-3 border-b border-white/5">
+                    <div class="relative flex items-center justify-center h-14">
+                        <div class="absolute bottom-0 translate-y-1/4 left-6 z-30">
+                            <img src="/character.png" class="w-16 h-16 object-cover rounded-full border-[3px] shadow-xl" style="border-color: #1f2b5e;" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'100\' height=\'100\'%3E%3Crect width=\'100\' height=\'100\' fill=\'%23374892\'/%3E%3C/svg%3E'">
+                        </div>
+                        <h1 class="text-[17px] font-bold tracking-widest text-white/90 z-20">Rin☪︎ Music Player</h1>
+                    </div>
+                </div>
 
-    </script>
+                <div class="mt-4 px-5 mb-2">
+                    <div class="w-full aspect-video rounded-2xl overflow-hidden bg-black/50 shadow-2xl border border-white/10 relative pointer-events-none">
+                        <div id="player" class="absolute inset-0"></div>
+                    </div>
+                </div>
+
+                <div class="px-8 mb-2">
+                    <div class="flex justify-between text-[10px] text-white/60 font-mono mb-1.5 px-1 font-bold">
+                        <span id="current-time">0:00</span>
+                        <span id="duration-total">0:00</span>
+                    </div>
+                    <input type="range" id="seek-bar" value="0" step="0.1" class="w-full appearance-none bg-transparent">
+                </div>
+
+                <div class="flex justify-between items-center px-10 mb-4">
+                    <button onclick="toggleShuffle()" id="btn-shuffle" class="text-white/40"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/></svg></button>
+                    <div class="flex items-center gap-6">
+                        <button onclick="prevVideo()" class="text-white active:scale-90"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg></button>
+                        <button onclick="togglePlay()" id="play-pause-btn" class="w-10 h-10 bg-white rounded-full flex items-center justify-center active:scale-95 shadow-lg" style="color: var(--app-bg);"><svg id="icon-play" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg><svg id="icon-pause" class="hidden" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg></button>
+                        <button onclick="nextVideo()" class="text-white active:scale-90"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg></button>
+                    </div>
+                    <button onclick="toggleRepeat()" id="btn-repeat" class="text-white/40 relative"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 1l4 4-4 4M3 11V9a4 4 0 014-4h14M7 23l-4-4 4-4M21 13v2a4 4 0 01-4 4H3"/></svg><span id="repeat-1-indicator" class="hidden absolute -top-2 -right-2 text-[8px] font-bold bg-white rounded-full w-3.5 h-3.5 flex items-center justify-center shadow-md" style="color: var(--app-bg);">1</span></button>
+                </div>
+            </div>
+
+            <div class="flex-1 overflow-y-auto px-5 bg-[#374892] min-h-0 pt-2 pb-28" id="playlist-container"></div>   
+        </section>
+
+        <section id="view-links" class="h-full hidden flex flex-col w-full min-h-0 bg-[#374892]">
+            <div class="w-full flex-shrink-0 bg-[#1f2b5e] safe-top pb-3 border-b border-white/5">
+                <div class="relative flex items-center justify-center h-14">
+                    <div class="absolute bottom-0 translate-y-1/4 left-6 z-30"><img src="/character.png" class="w-16 h-16 object-cover rounded-full border-[3px] shadow-xl" style="border-color: #1f2b5e;"></div>
+                    <h1 class="text-[17px] font-bold tracking-widest text-white/90 z-20 uppercase">Rin's LINKS</h1>
+                </div>
+            </div>
+            <div class="flex-1 flex flex-col items-center justify-center p-8 overflow-y-auto">
+                <div class="grid grid-cols-1 gap-4 w-full max-w-xs">
+                    <a href="#" class="bg-white/5 p-4 rounded-2xl text-center font-bold border border-white/5 active:bg-white/10 transition text-white">X (Twitter)</a>
+                    <a href="#" class="bg-white/5 p-4 rounded-2xl text-center font-bold border border-white/5 active:bg-white/10 transition text-white">公式HP</a>
+                    <a href="#" class="bg-white/5 p-4 rounded-2xl text-center font-bold border border-white/5 active:bg-white/10 transition text-white">BOOTH</a>
+                </div>
+            </div>
+        </section>
+
+        <section id="view-edit" class="h-full hidden flex flex-col w-full min-h-0 bg-[#374892]">
+            <div class="w-full flex-shrink-0 bg-[#1f2b5e] safe-top pb-3 border-b border-white/5">
+                <div class="relative flex items-center justify-center h-14">
+                    <div class="absolute bottom-0 translate-y-1/4 left-6 z-30"><img src="/character.png" class="w-16 h-16 object-cover rounded-full border-[3px] shadow-xl" style="border-color: #1f2b5e;"></div>
+                    <h1 class="text-[17px] font-bold tracking-widest text-white/90 z-20 uppercase">APP SETTING</h1>
+                </div>
+            </div>
+            <div class="flex-1 p-8 overflow-y-auto">
+                <div class="bg-black/20 p-4 rounded-2xl border border-white/5 mb-6">
+                    <div class="text-[10px] text-white/40 mb-2 font-bold uppercase tracking-tighter">API STATUS</div>
+                    <div class="text-xs font-bold text-white/90 mb-1">リスト最終更新:</div>
+                    <div class="text-sm font-mono text-white/70 bg-black/30 p-2 rounded-lg" id="status-last-update">未取得</div>
+                    <div class="text-[10px] text-white/40 mt-3 font-bold">※リストは毎日0:00以降に自動更新されます。手動更新は制限されています。</div>
+                </div>
+                <div class="bg-black/20 p-4 rounded-2xl border border-white/5">
+                    <label class="block text-[10px] text-white/40 mb-2 font-bold uppercase tracking-tighter">YouTube API KEY</label>
+                    <input type="password" id="api-key-input" placeholder="AIzaSy..." class="w-full bg-black/40 text-white text-sm px-3 py-3 rounded-xl border border-white/10 focus:outline-none focus:border-white/50 transition">
+                    <div class="text-[10px] text-white/40 mt-2 font-bold">ソースコード内のキーが優先されます。</div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <nav class="w-full bg-[#1f2b5e] border-t border-white/5 safe-bottom">
+        <div class="flex justify-around items-end h-16 pt-2 pb-1">
+            <button id="nav-player" onclick="switchTab('player')" class="nav-btn text-white flex flex-col items-center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg><span class="text-[9px] mt-1 font-bold">PLAYER</span></button>
+            <button id="nav-links" onclick="switchTab('links')" class="nav-btn text-white/30 flex flex-col items-center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg><span class="text-[9px] mt-1 font-bold">LINKS</span></button>
+            <button id="nav-edit" onclick="switchTab('edit')" class="nav-btn text-white/30 flex flex-col items-center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg><span class="text-[9px] mt-1 font-bold">SETTING</span></button>
+        </div>
+    </nav>
+
+<script>
+    // 1. 高度強制アジャスト処理
+    function setFillHeight() {
+        const vh = window.innerHeight * 0.01;
+        document.documentElement.style.setProperty('--vh', vh + 'px');
+    }
+    window.addEventListener('resize', setFillHeight);
+    window.addEventListener('orientationchange', () => setTimeout(setFillHeight, 200));
+    setFillHeight();
+
+    // 2. 変数定義
+    const MY_API_KEY = "AIzaSyBQ5nPI4F-ATGGHXi5CmjAUCmpf05KPpZU";
+    let player, playlist = [], currentIndex = 0, appStarted = false, backgroundTime = 0;
+    let isShuffle = false, repeatMode = 0;
+    const TARGET_HANDLE = '@r_____in__';
+    const CACHE_KEY = 'video_cache_v9';
+
+    // 3. YouTube API
+    const tag = document.createElement('script');
+    tag.src = "https://www.youtube.com/iframe_api";
+    document.head.appendChild(tag);
+
+    function onYouTubeIframeAPIReady() {
+        player = new YT.Player('player', {
+            height: '100%', width: '100%', videoId: '',
+            playerVars: { 'playsinline': 1, 'controls': 0, 'modestbranding': 1, 'rel': 0 },
+            events: { 'onStateChange': onPlayerStateChange }
+        });
+    }
+
+    // 4. アプリ起動処理（iOS音声ロック解除含む）
+    async function startApp() {
+        if(appStarted) return;
+        
+        if (player && typeof player.playVideo === 'function') {
+            try {
+                player.mute();
+                player.playVideo();
+                setTimeout(() => { player.pauseVideo(); player.unMute(); }, 100);
+            } catch (e) { console.log("Unlock Skipped"); }
+        }
+
+        appStarted = true;
+        const splash = document.getElementById('splash-screen');
+        splash.classList.add('splash-fade-out');
+        setTimeout(() => splash.style.display = 'none', 600);
+        
+        let apiKey = (MY_API_KEY !== "") ? MY_API_KEY : localStorage.getItem('yt_api_key');
+        if (apiKey) {
+            document.getElementById('api-key-input').value = apiKey;
+            await checkDailyUpdate(apiKey);
+        } else { switchTab('edit'); }
+        updateStatusUI();
+    }
+
+    // 5. リスト取得とレンダリング
+    async function checkDailyUpdate(apiKey) {
+        const today = new Date().toISOString().split('T')[0];
+        const cached = localStorage.getItem(CACHE_KEY);
+        if (cached && localStorage.getItem('last_fetch_date') === today) {
+            playlist = JSON.parse(cached);
+            renderPlaylist();
+            if(playlist.length > 0) playAt(0, false);
+        } else { await fetchFullPlaylist(apiKey); }
+    }
+
+    async function fetchFullPlaylist(apiKey) {
+        try {
+            const chRes = await fetch("https://www.googleapis.com/youtube/v3/channels?part=contentDetails&forHandle=" + TARGET_HANDLE + "&key=" + apiKey);
+            const chData = await chRes.json();
+            const uploadsListId = chData.items[0].contentDetails.relatedPlaylists.uploads;
+            const plRes = await fetch("https://www.googleapis.com/youtube/v3/playlistItems?part=snippet,contentDetails&maxResults=50&playlistId=" + uploadsListId + "&key=" + apiKey);
+            const plData = await plRes.json();
+            const vIds = plData.items.map(i => i.contentDetails.videoId).join(',');
+            const vRes = await fetch("https://www.googleapis.com/youtube/v3/videos?part=contentDetails,snippet&id=" + vIds + "&key=" + apiKey);
+            const vData = await vRes.json();
+
+            playlist = vData.items.filter(v => v.contentDetails.duration.includes('M')).map(v => ({
+                id: v.id, title: v.snippet.title, thumb: v.snippet.thumbnails.medium.url,
+                duration: parseISO8601(v.contentDetails.duration)
+            }));
+            localStorage.setItem(CACHE_KEY, JSON.stringify(playlist));
+            localStorage.setItem('last_fetch_date', new Date().toISOString().split('T')[0]);
+            localStorage.setItem('last_fetch_datetime', new Date().toLocaleString());
+            renderPlaylist();
+            if(playlist.length > 0) playAt(0, false);
+        } catch (e) { console.error(e); }
+    }
+
+    function renderPlaylist() {
+        const container = document.getElementById('playlist-container');
+        container.innerHTML = playlist.map((item, i) => {
+            const isActive = i === currentIndex;
+            const border = isActive ? 'border-white/40 bg-white/10' : 'border-transparent bg-white/5';
+            return `
+                <div id="track-${i}" onclick="playAt(${i})" class="flex items-center gap-3 mb-3 p-2.5 rounded-2xl h-[72px] transition-all cursor-pointer border-2 ${border}">
+                    <img src="${item.thumb}" class="h-full aspect-video object-cover rounded-md shadow-md flex-shrink-0">
+                    <div class="flex-1 min-w-0">
+                        <div class="text-[13px] font-bold truncate ${isActive ? 'text-white' : 'text-white/60'}">${item.title}</div>
+                        <div class="text-[9px] text-white/30 mt-1 font-bold uppercase tracking-widest">TRACK ${i+1} • ${item.duration}</div>
+                    </div>
+                    ${isActive ? '<div class="w-2 h-2 bg-white rounded-full animate-pulse"></div>' : ''}
+                </div>`;
+        }).join('');
+    }
+
+    // 6. プレイヤー操作
+    function playAt(index, auto = true) {
+        currentIndex = index;
+        if (auto) player.loadVideoById(playlist[currentIndex].id);
+        else player.cueVideoById(playlist[currentIndex].id);
+        renderPlaylist();
+        const el = document.getElementById('track-' + index);
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    function togglePlay() { player.getPlayerState() === 1 ? player.pauseVideo() : player.playVideo(); }
+    function nextVideo() { currentIndex = (currentIndex + 1) % playlist.length; playAt(currentIndex); }
+    function prevVideo() { currentIndex = (currentIndex - 1 + playlist.length) % playlist.length; playAt(currentIndex); }
+
+    function onPlayerStateChange(e) {
+        const play = document.getElementById('icon-play'), pause = document.getElementById('icon-pause');
+        if (e.data === 1) { play.classList.add('hidden'); pause.classList.remove('hidden'); updateTick(); }
+        else { play.classList.remove('hidden'); pause.classList.add('hidden'); }
+        if (e.data === 0) nextVideo();
+    }
+
+    function updateTick() {
+        const loop = setInterval(() => {
+            if (player.getPlayerState() !== 1) return clearInterval(loop);
+            const curr = player.getCurrentTime(), total = player.getDuration();
+            document.getElementById('current-time').innerText = formatSeconds(curr);
+            document.getElementById('duration-total').innerText = formatSeconds(total);
+            document.getElementById('seek-bar').value = (curr / total) * 100 || 0;
+        }, 500);
+    }
+
+    // 7. ユーティリティ & ライフサイクル
+    function switchTab(tab) {
+        ['player', 'links', 'edit'].forEach(id => {
+            document.getElementById('view-' + id).classList.add('hidden');
+            document.getElementById('nav-' + id).classList.replace('text-white', 'text-white/30');
+        });
+        document.getElementById('view-' + tab).classList.remove('hidden');
+        document.getElementById('nav-' + tab).classList.replace('text-white/30', 'text-white');
+    }
+
+    function parseISO8601(d) {
+        const m = d.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
+        return formatSeconds(parseInt(m[1]||0)*3600 + parseInt(m[2]||0)*60 + parseInt(m[3]||0));
+    }
+    function formatSeconds(s) {
+        return Math.floor(s/60) + ":" + Math.floor(s%60).toString().padStart(2,'0');
+    }
+    function updateStatusUI() {
+        document.getElementById('status-last-update').innerText = localStorage.getItem('last_fetch_datetime') || '未取得';
+    }
+
+    document.getElementById('seek-bar').oninput = function() {
+        player.seekTo(player.getDuration() * (this.value / 100));
+    };
+
+    // 30分放置でスプラッシュに戻すロジック
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) backgroundTime = Date.now();
+        else {
+            if (backgroundTime > 0 && (Date.now() - backgroundTime) >= 1800000) {
+                const state = player && typeof player.getPlayerState === 'function' ? player.getPlayerState() : -1;
+                if (state !== 1 && state !== 2) {
+                    location.reload(); // シンプルかつ確実に初期化
+                }
+            }
+        }
+    });
+</script>
 </body>
 </html>
