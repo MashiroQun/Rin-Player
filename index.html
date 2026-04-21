@@ -247,12 +247,20 @@
     document.head.appendChild(tag);
 
     function onYouTubeIframeAPIReady() {
-        player = new YT.Player('player', {
-            height: '100%', width: '100%',
-            playerVars: { 'playsinline': 1, 'controls': 0, 'modestbranding': 1, 'rel': 0 },
-            events: { 'onStateChange': onPlayerStateChange, 'onError': onPlayerError }
-        });
-    }
+    player = new YT.Player('player', {
+        height: '100%', width: '100%',
+        playerVars: { 
+            'playsinline': 1, 
+            'controls': 0, 
+            'modestbranding': 1, 
+            'rel': 0,
+            // 自分のサイトのドメイン（例: https://your-pwa-domain.com）を正確に指定
+            'origin': 'https://rin-player.vercel.app'
+        },
+        events: { 'onStateChange': onPlayerStateChange, 'onError': onPlayerError }
+    });
+}
+
 
     async function startApp() {
         if(appStarted) return;
@@ -261,7 +269,7 @@
         const splash = document.getElementById('splash-screen');
         splash.classList.add('splash-fade-out');
         setTimeout(() => splash.style.display = 'none', 600);
-        
+        //
         if (player && typeof player.playVideo === 'function') {
             try {
                 player.mute();
@@ -274,7 +282,7 @@
                 setTimeout(() => { player.pauseVideo(); player.unMute(); }, 200);
             } catch (e) { console.log("Unlock Skipped"); }
         }
-
+        //
         let apiKey = (MY_API_KEY !== "") ? MY_API_KEY : localStorage.getItem('yt_api_key');
         if (apiKey) {
             document.getElementById('api-key-input').value = apiKey;
