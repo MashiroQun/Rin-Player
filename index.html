@@ -435,6 +435,16 @@
             const m = Math.floor(sec / 60), s = Math.floor(sec % 60);
             return `${m}:${s.toString().padStart(2, '0')}`;
         }
+        
+        window.addEventListener('resize', () => {
+// 0.1秒待ってから、bodyの高さを一瞬だけ変えて戻すことで再描画を強制する
+setTimeout(() => {
+document.body.style.display = 'none';
+document.body.offsetHeight; // 読み取りを発生させてリフローを強制
+document.body.style.display = 'flex';
+}, 100);
+});
+
     </script>
 </body>
 </html>
