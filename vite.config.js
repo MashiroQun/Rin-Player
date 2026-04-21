@@ -1,5 +1,41 @@
 import { defineConfig } from 'vite'
+import { VitePWA } from 'vite-plugin-pwa'
 
 export default defineConfig({
-  // VercelにViteプロジェクトだと認識させるための空設定
+  plugins: [
+    VitePWA({
+      // Service Worker を自動的に登録する設定
+      registerType: 'autoUpdate',
+      // マニフェストに含める静的アセット（アイコンなど）
+      includeAssets: ['character.png'],
+      manifest: {
+        name: 'Rin☪︎ Music Player',
+        short_name: 'Rin Music',
+        description: 'Rin☪︎ Official Music Player PWA',
+        start_url: '/',
+        display: 'fullscreen', // iOSでは実質 standalone 動作になります
+        background_color: '#2C3D85',
+        theme_color: '#2C3D85',
+        lang: 'ja',
+        icons: [
+          {
+            src: 'character.png', // publicからの相対パス
+            sizes: '500x500',
+            type: 'image/png',
+            purpose: 'any'
+          },
+          {
+            src: 'character.png',
+            sizes: '500x500',
+            type: 'image/png',
+            purpose: 'maskable'
+          }
+        ]
+      },
+      // 開発環境（npm run dev）でもPWAをシミュレートしたい場合
+      devOptions: {
+        enabled: true
+      }
+    })
+  ]
 })
