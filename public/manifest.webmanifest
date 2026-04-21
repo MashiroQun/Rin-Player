@@ -3,7 +3,7 @@
   "short_name": "Rin Music",
   "description": "Rin☪︎ Official Music Player PWA",
   "start_url": "/",
-  "display": "standalone",
+  "display": "fullscreen",
   "background_color": "#2C3D85",
   "theme_color": "#2C3D85",
   "lang": "ja",
