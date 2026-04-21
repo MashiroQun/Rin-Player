@@ -112,8 +112,10 @@
                 </div>
 
                 <div class="flex justify-between items-center px-8 mb-4">
-                    <!-- シャッフルボタン（白丸化） -->
-                    <button onclick="toggleShuffle()" id="btn-shuffle" class="w-10 h-10 bg-white rounded-full flex items-center justify-center active:scale-95 shadow-lg transition opacity-60" style="color: #9ca3af;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/></svg></button>
+
+                    <button onclick="toggleShuffle()" id="btn-shuffle" class="w-10 h-10 flex items-center justify-center active:scale-95 transition opacity-40 text-white">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/></svg>
+                    </button>
                     
                     <div class="flex items-center gap-5">
                         <button onclick="playPrev()" class="text-white active:scale-90 transition"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg></button>
@@ -121,9 +123,10 @@
                         <button onclick="playNext(true)" class="text-white active:scale-90 transition"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg></button>
                     </div>
                     
-                    <!-- リピートボタン（白丸化） -->
-                    <button onclick="toggleRepeat()" id="btn-repeat" class="w-10 h-10 bg-white rounded-full flex items-center justify-center active:scale-95 shadow-lg transition opacity-60 relative" style="color: #9ca3af;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 1l4 4-4 4M3 11V9a4 4 0 014-4h14M7 23l-4-4 4-4M21 13v2a4 4 0 01-4 4H3"/></svg><span id="repeat-1-indicator" class="hidden absolute -top-1 -right-1 text-[8px] font-bold bg-[#3B82F6] text-white rounded-full w-4 h-4 flex items-center justify-center shadow-md">1</span></button>
-                </div>
+                    <button onclick="toggleRepeat()" id="btn-repeat" class="w-10 h-10 flex items-center justify-center active:scale-95 transition opacity-40 text-white relative">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 1l4 4-4 4M3 11V9a4 4 0 014-4h14M7 23l-4-4 4-4M21 13v2a4 4 0 01-4 4H3"/></svg>
+                    <span id="repeat-1-indicator" class="hidden absolute -top-1 -right-1 text-[8px] font-bold bg-[#3B82F6] text-white rounded-full w-4 h-4 flex items-center justify-center shadow-md">1</span>
+                    </button>
             </div>
 
             <div class="flex-1 overflow-y-auto px-4 bg-[#374892] min-h-0 pt-3 pb-6" id="playlist-container"></div>   
@@ -423,27 +426,46 @@
         player.seekTo(player.getDuration() * (this.value / 100));
     };
 
-    // 6. シャッフル・リピート機能（白ボタンの色切り替え）
-    function toggleShuffle() {
-        isShuffle = !isShuffle;
-        const btn = document.getElementById('btn-shuffle');
-        
-        if (isShuffle) {
-            btn.style.color = 'var(--app-bg)';
-            btn.classList.remove('opacity-60');
-            let currentTrack = playbackSequence[currentSeqIndex];
-            let others = playbackSequence.filter(i => i !== currentTrack).sort(() => Math.random() - 0.5);
-            playbackSequence = [currentTrack, ...others];
-            currentSeqIndex = 0;
-        } else {
-            btn.style.color = '#9ca3af';
-            btn.classList.add('opacity-60');
-            let currentTrack = playbackSequence[currentSeqIndex];
-            playbackSequence = activePlaylist.map((_, i) => i);
-            currentSeqIndex = playbackSequence.indexOf(currentTrack);
-        }
-        renderPlaylist();
+    // 6. シャッフル・リピート機能の修正
+function toggleShuffle() {
+    isShuffle = !isShuffle;
+    const btn = document.getElementById('btn-shuffle');
+    
+    if (isShuffle) {
+        // ONの状態：鮮やかな青、または明るい白にする
+        btn.style.color = '#3B82F6'; // 鮮やかな青（お好みで #fff でもOK）
+        btn.classList.replace('opacity-40', 'opacity-100');
+    } else {
+        // OFFの状態：白の半透明
+        btn.style.color = '#fff';
+        btn.classList.replace('opacity-100', 'opacity-40');
     }
+    renderPlaylist();
+}
+
+function toggleRepeat() {
+    repeatMode = (repeatMode + 1) % 3;
+    const btn = document.getElementById('btn-repeat');
+    const ind = document.getElementById('repeat-1-indicator');
+    
+    ind.classList.add('hidden');
+    
+    if (repeatMode === 0) {
+        // OFF
+        btn.style.color = '#fff';
+        btn.classList.replace('opacity-100', 'opacity-40');
+    } else if (repeatMode === 1) {
+        // 全曲リピート（ON）
+        btn.style.color = '#3B82F6';
+        btn.classList.replace('opacity-40', 'opacity-100');
+    } else if (repeatMode === 2) { 
+        // 1曲リピート（ON + インジケーター）
+        btn.style.color = '#3B82F6';
+        btn.classList.replace('opacity-40', 'opacity-100');
+        ind.classList.remove('hidden'); 
+    }
+}
+
 
     function toggleRepeat() {
         repeatMode = (repeatMode + 1) % 3;
