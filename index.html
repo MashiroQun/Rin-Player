@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#1f2b5e">
     <title>Rin☪︎ Music Player</title>
     
     <link rel="icon" href="/character.png" type="image/png">
@@ -71,7 +72,7 @@
     </style>
 </head>
 <body class="fixed inset-0 flex flex-col overflow-hidden bg-black">
-    <div class="w-full max-w-md mx-auto h-[100dvh] flex flex-col relative bg-[#2C3D85] shadow-2xl overflow-hidden">
+    <div class="flex-1 w-full max-w-md mx-auto flex flex-col relative bg-[#2C3D85] shadow-2xl overflow-hidden">
 
         <div id="splash-screen" class="absolute inset-0 z-[9999] flex flex-col items-center justify-center transition-all" style="background: var(--app-bg);" onclick="startApp()">
             <div class="relative w-40 h-40 mb-12 animate-float-large">
@@ -82,7 +83,7 @@
             <h1 class="text-2xl font-bold tracking-[0.1em] text-white mb-4 text-center z-10 drop-shadow-lg">Rin☪︎ Music Player</h1>
             
             <div id="splash-text" class="absolute bottom-24 animate-pulse text-white/70 text-[10px] font-bold tracking-[0.2em] z-10">
-                - 読み込み中 -
+                - TAP TO START -
             </div>
         </div>
 
@@ -133,7 +134,7 @@
                     </div>
                 </div>
 
-                <div class="flex-1 overflow-y-auto px-5 bg-[#374892] min-h-0 pt-2 pb-12" id="playlist-container"></div>   
+                <div class="flex-1 overflow-y-auto px-5 bg-[#374892] min-h-0 pt-2 pb-28" id="playlist-container"></div>   
             </section>
 
             <section id="view-links" class="h-full hidden flex flex-col w-full min-h-0 bg-[#374892]">
@@ -222,12 +223,7 @@
             player = new YT.Player('player', {
                 height: '100%', width: '100%', videoId: '',
                 playerVars: { 'playsinline': 1, 'controls': 0, 'modestbranding': 1, 'rel': 0 },
-                events: { 
-                    'onStateChange': onPlayerStateChange, 
-                    'onReady': () => {
-                        document.getElementById('splash-text').innerText = "- タップして開始 -";
-                    }
-                }
+                events: { 'onStateChange': onPlayerStateChange }
             });
         }
 
@@ -245,22 +241,30 @@
         async function startApp() {
             if(appStarted) return;
             
-            // iOSの音声ロックを解除するためのテクニック
-            if(player && player.playVideo) {
-                player.mute();
-                player.playVideo();
-                setTimeout(() => {
-                    player.pauseVideo();
-                    player.unMute();
-                }, 100);
+            if (player) {
+                if (typeof player.playVideo === 'function') {
+                    try {
+                        player.mute();
+                        player.playVideo();
+                        setTimeout(() => {
+                            player.pauseVideo();
+                            player.unMute();
+                        }, 100);
+                    } catch (e) {
+                        console.log("音声ロック解除をスキップ");
+                    }
+                }
             }
 
             appStarted = true;
             hideSplashScreen();
             
             const savedKey = localStorage.getItem('yt_api_key');
-            const hasHardcodedKey = MY_API_KEY && MY_API_KEY.length > 10;
-            const apiKey = hasHardcodedKey ? MY_API_KEY : savedKey;
+            let apiKey = savedKey;
+            
+            if (MY_API_KEY !== "") {
+                apiKey = MY_API_KEY;
+            }
             
             if (apiKey) {
                 document.getElementById('api-key-input').value = apiKey;
@@ -283,7 +287,7 @@
             splash.classList.remove('splash-fade-out');
             splash.style.display = 'flex';
             document.getElementById('splash-text').innerText = "- タップして復帰 -";
-            appStarted = false; // 再タップで再開できるようにリセット
+            appStarted = false; // 再開できるようにリセット
         }
 
         // バックグラウンド復帰時の処理
@@ -291,14 +295,14 @@
             if (document.visibilityState === 'hidden') {
                 backgroundTime = Date.now();
             } else if (document.visibilityState === 'visible') {
-                const hasHardcodedKey = MY_API_KEY && MY_API_KEY.length > 10;
-                const apiKey = hasHardcodedKey ? MY_API_KEY : localStorage.getItem('yt_api_key');
+                let apiKey = localStorage.getItem('yt_api_key');
+                if (MY_API_KEY !== "") apiKey = MY_API_KEY;
                 
                 if (apiKey) checkDailyUpdate(apiKey);
                 
                 // 30分経過 (1,800,000ミリ秒) かつ 再生(1)/一時停止(2)中でないならスプラッシュ表示
                 if (backgroundTime > 0 && (Date.now() - backgroundTime) >= 1800000) {
-                    const state = player && player.getPlayerState ? player.getPlayerState() : -1;
+                    const state = player && typeof player.getPlayerState === 'function' ? player.getPlayerState() : -1;
                     if (state !== 1 && state !== 2) {
                         showSplashScreen();
                     }
@@ -371,9 +375,8 @@
                 const isActive = i === currentIndex;
                 const borderStyle = isActive ? 'border-white/40 bg-white/10' : 'border-transparent bg-white/5';
                 return `
-                    <div id="track-${i}" onclick="playAt(${i})" 
-                        class="flex items-center gap-3 mb-3 p-2.5 rounded-2xl h-[72px] transition-all cursor-pointer border-2 ${borderStyle}">
-                        <img src="${item.thumb}" class="h-full aspect-video object-cover rounded-lg shadow-md flex-shrink-0">
+                    <div id="track-${i}" onclick="playAt(${i})" class="flex items-center gap-3 mb-3 p-2.5 rounded-2xl h-[72px] transition-all cursor-pointer border-2 ${borderStyle}">
+                        <img src="${item.thumb}" class="h-full aspect-video object-cover rounded-md shadow-md flex-shrink-0">
                         <div class="flex-1 min-w-0">
                             <div class="text-[13px] font-bold truncate ${isActive ? 'text-white' : 'text-white/60'}">${item.title}</div>
                             <div class="text-[9px] text-white/30 mt-1 font-bold tracking-widest uppercase">トラック ${i+1} • ${item.duration}</div>
