@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="theme-color" content="#1f2b5e">
-    <title>Rin☪︎ Music</title>
+    <title>Rin☪︎ Music Player</title>
     
     <link rel="icon" href="/character.png" type="image/png">
     <link rel="apple-touch-icon" href="/character.png">
@@ -13,48 +13,37 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- ドラッグ＆ドロップ用ライブラリ -->
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     
     <style>
-        :root { --app-bg: #1f2b5e; }
+        :root { --app-bg: #1f2b5e; --vh: 1vh; }
         
-        /* 全体の背景（PC時は暗く、スマホ時はアプリ色と同化させて隙間を隠す） */
+        /* 画面全体の設定。JSの--vhを利用して高さを鉄壁固定する */
         body {
-    margin: 0; padding: 0;
-    background-color: #0f172a;
-    /* 中央寄せをやめて、上から配置する */
-    display: block; 
-    height: 100dvh; 
-    overflow: hidden;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    -webkit-tap-highlight-color: transparent;
-}
+            margin: 0; padding: 0;
+            background-color: #0f172a;
+            position: fixed; inset: 0;
+            height: 100vh; /* JS無効時のフォールバック */
+            height: calc(var(--vh, 1vh) * 100);
+            display: flex; justify-content: center; align-items: center;
+            overflow: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        /* スマホ画面サイズの時は背景と同色にして境界線を消す */
         @media (max-width: 450px) {
             body { background-color: var(--app-bg); }
         }
 
         #app-container {
-    width: 100%; 
-    max-width: 430px; 
-    /* 中央に寄せるための設定 */
-    margin: 0 auto;
-    /* 高さを dvh に頼らず 100% にする */
-    height: 100%; 
-    background: var(--app-bg); 
-    color: #fff;
-    position: relative; 
-    display: flex; 
-    flex-direction: column;
-    box-shadow: 0 0 40px rgba(0,0,0,0.5); 
-    overflow: hidden;
-}
+            width: 100%; max-width: 430px; height: 100%;
+            background: var(--app-bg); color: #fff;
+            position: relative; display: flex; flex-direction: column;
+            box-shadow: 0 0 40px rgba(0,0,0,0.5); overflow: hidden;
+        }
 
-        .safe-top { 
-    padding-top: env(safe-area-inset-top, 0px); }
-            .header-content {
-    padding-top: 8px; /* ステータスバーの下に少し余白を作る */
-}
+        .safe-top { padding-top: calc(env(safe-area-inset-top) + 4px); }
         .safe-bottom { padding-bottom: calc(env(safe-area-inset-bottom) + 8px); }
 
         /* カスタムスライダー */
@@ -68,7 +57,6 @@
         .icon-glow { animation: glow-pulse 4s ease-in-out infinite; }
         .splash-fade-out { opacity: 0; pointer-events: none; transform: scale(1.05); transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
 
-        /* スクロールバーのカスタマイズ（PC閲覧時用） */
         ::-webkit-scrollbar { width: 5px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 5px; }
@@ -79,38 +67,29 @@
 
 <div id="app-container">
 
-    <!-- スプラッシュ画面 -->
     <div id="splash-screen" class="absolute inset-0 z-[9999] flex flex-col items-center justify-center transition-all bg-[var(--app-bg)]" onclick="startApp()">
         <div class="relative w-36 h-36 mb-10 animate-float-large">
             <img src="/character.png" alt="アイコン" class="w-full h-full object-cover rounded-full z-10 relative border-[3px] border-white/10 shadow-2xl">
             <div class="absolute inset-0 rounded-full icon-glow"></div>
         </div>
         <h1 class="text-xl font-bold tracking-[0.1em] text-white mb-4 text-center z-10 drop-shadow-lg">Rin☪︎ Music Player</h1>
-        <div class="absolute bottom-20 animate-pulse text-white/70 text-[10px] font-bold tracking-[0.2em] z-10">
-            - TAP TO START -
-        </div>
+        <div class="absolute bottom-20 animate-pulse text-white/70 text-[10px] font-bold tracking-[0.2em] z-10">- TAP TO START -</div>
     </div>
 
-    <!-- メインコンテンツ -->
     <main class="flex-1 flex flex-col w-full min-h-0 relative">
         
         <!-- PLAYER VIEW -->
         <section id="view-player" class="flex-1 flex flex-col w-full min-h-0 overflow-hidden absolute inset-0">
             <div class="w-full flex-shrink-0 z-20 bg-[#2C3D85]">
-                <div class="w-full bg-[#1f2b5e] safe-top border-b border-white/5">
-    <div class="header-content pb-2"> <div class="relative flex items-center justify-center h-14">
-            </div>
-    </div>
-</div>
+                
+                <!-- ヘッダー部分のHTML構造を修復 -->
+                <div class="w-full bg-[#1f2b5e] safe-top pb-2 border-b border-white/5">
                     <div class="relative flex items-center justify-center h-14">
                         <div class="absolute bottom-0 translate-y-1/4 left-4 z-30">
-                            <!-- アイコンを少し大きく -->
                             <img src="/character.png" class="w-16 h-16 object-cover rounded-full border-[3px] shadow-xl" style="border-color: #1f2b5e;">
                         </div>
                         <div class="flex items-center gap-1.5 z-20">
-                            <!-- 文字を大きく、Musicを追加 -->
                             <h1 class="text-[16px] font-bold tracking-widest text-white/90">Rin☪︎ Music Player</h1>
-                            <!-- 青いハートのSVGを追加 -->
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="#3B82F6" stroke="#3B82F6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
                         </div>
                     </div>
@@ -131,9 +110,9 @@
                 </div>
 
                 <div class="flex justify-between items-center px-8 mb-4">
-
+                    <!-- シャッフルボタン -->
                     <button onclick="toggleShuffle()" id="btn-shuffle" class="w-10 h-10 flex items-center justify-center active:scale-95 transition opacity-40 text-white">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/></svg>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/></svg>
                     </button>
                     
                     <div class="flex items-center gap-5">
@@ -142,10 +121,12 @@
                         <button onclick="playNext(true)" class="text-white active:scale-90 transition"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg></button>
                     </div>
                     
+                    <!-- リピートボタン -->
                     <button onclick="toggleRepeat()" id="btn-repeat" class="w-10 h-10 flex items-center justify-center active:scale-95 transition opacity-40 text-white relative">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 1l4 4-4 4M3 11V9a4 4 0 014-4h14M7 23l-4-4 4-4M21 13v2a4 4 0 01-4 4H3"/></svg>
-                    <span id="repeat-1-indicator" class="hidden absolute -top-1 -right-1 text-[8px] font-bold bg-[#3B82F6] text-white rounded-full w-4 h-4 flex items-center justify-center shadow-md">1</span>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 1l4 4-4 4M3 11V9a4 4 0 014-4h14M7 23l-4-4 4-4M21 13v2a4 4 0 01-4 4H3"/></svg>
+                        <span id="repeat-1-indicator" class="hidden absolute -top-1 -right-1 text-[8px] font-bold bg-[#3B82F6] text-white rounded-full w-4 h-4 flex items-center justify-center shadow-md">1</span>
                     </button>
+                </div>
             </div>
 
             <div class="flex-1 overflow-y-auto px-4 bg-[#374892] min-h-0 pt-3 pb-6" id="playlist-container"></div>   
@@ -155,7 +136,6 @@
         <section id="view-links" class="h-full hidden flex flex-col w-full min-h-0 absolute inset-0 bg-[#374892]">
             <div class="absolute inset-0 z-0 bg-cover bg-center opacity-30" style="background-image: url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2000&auto=format&fit=crop');"></div>
             
-            <!-- ヘッダーを復活 -->
             <div class="w-full flex-shrink-0 bg-[#1f2b5e] safe-top pb-3 border-b border-white/5 relative z-20">
                 <div class="relative flex items-center justify-center h-14">
                     <div class="absolute bottom-0 translate-y-1/4 left-6 z-30"><img src="/character.png" class="w-16 h-16 object-cover rounded-full border-[3px] shadow-xl" style="border-color: #1f2b5e;"></div>
@@ -205,7 +185,6 @@
                     <input type="password" id="api-key-input" placeholder="AIzaSy..." class="w-full bg-black/40 text-white text-sm px-3 py-3 rounded-xl border border-white/10 focus:outline-none focus:border-white/50 transition">
                 </div>
                 
-                <!-- 編集ボタンを下部に移動＆色を馴染ませる -->
                 <div class="mt-8">
                     <button onclick="openEditPlaylist()" class="w-full bg-white/10 border border-white/10 p-4 rounded-2xl text-white font-bold text-sm active:bg-white/20 transition flex items-center justify-center gap-2 shadow-lg">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
@@ -215,19 +194,17 @@
             </div>
         </section>
 
-        <!-- PLAYLIST EDIT VIEW (Overlay) -->
+        <!-- PLAYLIST EDIT VIEW -->
         <section id="view-edit-list" class="hidden absolute inset-0 z-50 bg-[#374892] flex flex-col w-full h-full transform transition-transform translate-y-full">
             <div class="w-full flex-shrink-0 bg-[#1f2b5e] safe-top pb-2 border-b border-white/5 flex items-center justify-between px-4 h-[calc(env(safe-area-inset-top)+56px)]">
                 <button onclick="closeEditPlaylist()" class="text-white p-2 active:opacity-50"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button>
                 <h1 class="text-[14px] font-bold tracking-widest text-white/90">リスト編集</h1>
-                <div class="w-10"></div> <!-- バランス用 -->
+                <div class="w-10"></div> 
             </div>
             
-            <!-- ドラッグ＆ドロップ可能なリスト領域 -->
             <div class="flex-1 overflow-y-auto p-4" id="edit-playlist-container"></div>
             
             <div class="p-4 bg-[#1f2b5e] safe-bottom border-t border-white/5">
-                <!-- 適用ボタンの色を調整 -->
                 <button onclick="saveEditedPlaylist()" class="w-full bg-white/10 border border-white/20 text-white font-bold py-3.5 rounded-xl shadow-lg active:bg-white/20 transition">保存して適用</button>
             </div>
         </section>
@@ -246,24 +223,25 @@
 </div>
 
 <script>
-    // 1. 変数定義
+    // ブラウザのナビゲーションバー対策（高さを正確に計算して固定）
+    function setFillHeight() {
+        const vh = window.innerHeight * 0.01;
+        document.documentElement.style.setProperty('--vh', vh + 'px');
+    }
+    window.addEventListener('resize', setFillHeight);
+    window.addEventListener('orientationchange', () => setTimeout(setFillHeight, 200));
+    setFillHeight();
+
     const MY_API_KEY = "AIzaSyBQ5nPI4F-ATGGHXi5CmjAUCmpf05KPpZU";
     const TARGET_HANDLE = '@r_____in__';
-    const CACHE_KEY = 'video_cache_v11'; // バージョン更新でキャッシュリセット
+    const CACHE_KEY = 'video_cache_v12';
 
     let player, appStarted = false;
-    let allPlaylist = [];    
-    let activePlaylist =[];  
-    let playbackSequence =[];
-    let currentSeqIndex = 0; 
-    let sortableInst = null; // ドラッグ機能のインスタンス
-
-    let isShuffle = false;
-    let repeatMode = 0; // 0:なし, 1:全曲, 2:1曲
-
+    let allPlaylist =[], activePlaylist = [], playbackSequence =[], currentSeqIndex = 0; 
+    let sortableInst = null;
+    let isShuffle = false, repeatMode = 0;
     let editingPlaylist =[]; 
 
-    // 2. YouTube API準備
     const tag = document.createElement('script');
     tag.src = "https://www.youtube.com/iframe_api";
     document.head.appendChild(tag);
@@ -276,7 +254,6 @@
         });
     }
 
-    // 3. アプリ起動処理
     async function startApp() {
         if(appStarted) return;
         appStarted = true;
@@ -306,7 +283,6 @@
         updateStatusUI();
     }
 
-    // 4. データ初期化とリスト生成
     async function initData(apiKey) {
         const today = new Date().toISOString().split('T')[0];
         const cached = localStorage.getItem(CACHE_KEY);
@@ -379,7 +355,6 @@
         }).join('');
     }
 
-    // 5. プレイヤー操作関連
     function playTrackBySequence(seqIndex, autoPlay = true) {
         if(activePlaylist.length === 0) return;
         currentSeqIndex = seqIndex;
@@ -445,46 +420,29 @@
         player.seekTo(player.getDuration() * (this.value / 100));
     };
 
-    // 6. シャッフル・リピート機能の修正
-function toggleShuffle() {
-    isShuffle = !isShuffle;
-    const btn = document.getElementById('btn-shuffle');
-    
-    if (isShuffle) {
-        // ONの状態：鮮やかな青、または明るい白にする
-        btn.style.color = '#3B82F6'; // 鮮やかな青（お好みで #fff でもOK）
-        btn.classList.replace('opacity-40', 'opacity-100');
-    } else {
-        // OFFの状態：白の半透明
-        btn.style.color = '#fff';
-        btn.classList.replace('opacity-100', 'opacity-40');
+    // 重複を解消・修正したシャッフル/リピート関数
+    function toggleShuffle() {
+        isShuffle = !isShuffle;
+        const btn = document.getElementById('btn-shuffle');
+        
+        if (isShuffle) {
+            btn.style.color = '#3B82F6';
+            btn.classList.replace('opacity-40', 'opacity-100');
+            
+            let currentTrack = playbackSequence[currentSeqIndex];
+            let others = playbackSequence.filter(i => i !== currentTrack).sort(() => Math.random() - 0.5);
+            playbackSequence = [currentTrack, ...others];
+            currentSeqIndex = 0;
+        } else {
+            btn.style.color = '#fff';
+            btn.classList.replace('opacity-100', 'opacity-40');
+            
+            let currentTrack = playbackSequence[currentSeqIndex];
+            playbackSequence = activePlaylist.map((_, i) => i);
+            currentSeqIndex = playbackSequence.indexOf(currentTrack);
+        }
+        renderPlaylist();
     }
-    renderPlaylist();
-}
-
-function toggleRepeat() {
-    repeatMode = (repeatMode + 1) % 3;
-    const btn = document.getElementById('btn-repeat');
-    const ind = document.getElementById('repeat-1-indicator');
-    
-    ind.classList.add('hidden');
-    
-    if (repeatMode === 0) {
-        // OFF
-        btn.style.color = '#fff';
-        btn.classList.replace('opacity-100', 'opacity-40');
-    } else if (repeatMode === 1) {
-        // 全曲リピート（ON）
-        btn.style.color = '#3B82F6';
-        btn.classList.replace('opacity-40', 'opacity-100');
-    } else if (repeatMode === 2) { 
-        // 1曲リピート（ON + インジケーター）
-        btn.style.color = '#3B82F6';
-        btn.classList.replace('opacity-40', 'opacity-100');
-        ind.classList.remove('hidden'); 
-    }
-}
-
 
     function toggleRepeat() {
         repeatMode = (repeatMode + 1) % 3;
@@ -492,20 +450,20 @@ function toggleRepeat() {
         const ind = document.getElementById('repeat-1-indicator');
         
         ind.classList.add('hidden');
+        
         if (repeatMode === 0) {
-            btn.style.color = '#9ca3af';
-            btn.classList.add('opacity-60');
+            btn.style.color = '#fff';
+            btn.classList.replace('opacity-100', 'opacity-40');
         } else if (repeatMode === 1) {
-            btn.style.color = 'var(--app-bg)';
-            btn.classList.remove('opacity-60');
+            btn.style.color = '#3B82F6';
+            btn.classList.replace('opacity-40', 'opacity-100');
         } else if (repeatMode === 2) { 
-            btn.style.color = 'var(--app-bg)';
-            btn.classList.remove('opacity-60');
+            btn.style.color = '#3B82F6';
+            btn.classList.replace('opacity-40', 'opacity-100');
             ind.classList.remove('hidden'); 
         }
     }
 
-    // 7. プレイリスト編集機能 (ドラッグ＆ドロップ対応)
     function openEditPlaylist() {
         editingPlaylist = JSON.parse(JSON.stringify(allPlaylist));
         renderEditPlaylist();
@@ -523,7 +481,6 @@ function toggleRepeat() {
     function renderEditPlaylist() {
         const container = document.getElementById('edit-playlist-container');
         
-        // ハートSVGの定義
         const heartLine = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>';
         const heartSlash = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path><line x1="2" y1="2" x2="22" y2="22"></line></svg>';
 
@@ -544,13 +501,11 @@ function toggleRepeat() {
             </div>
         `).join('');
 
-        // SortableJSの初期化（ドラッグによる並び替え）
         if(sortableInst) sortableInst.destroy();
         sortableInst = new Sortable(container, {
             handle: '.drag-handle',
             animation: 150,
             onEnd: function (evt) {
-                // 並び替え完了時に配列を同期
                 const itemEl = editingPlaylist.splice(evt.oldIndex, 1)[0];
                 editingPlaylist.splice(evt.newIndex, 0, itemEl);
             }
@@ -561,7 +516,7 @@ function toggleRepeat() {
         const item = editingPlaylist.find(p => p.id === id);
         if(item) {
             item.isHidden = !item.isHidden;
-            renderEditPlaylist(); // 再描画して表示を更新
+            renderEditPlaylist(); 
         }
     }
 
@@ -573,7 +528,6 @@ function toggleRepeat() {
         if(activePlaylist.length > 0) playTrackBySequence(0, false);
     }
 
-    // 8. ユーティリティ
     function switchTab(tab) {
         ['player', 'links', 'edit'].forEach(id => {
             document.getElementById('view-' + id).classList.add('hidden');
