@@ -16,20 +16,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 
     <style>
-        //:root { --app-bg: #1f2b5e; --vh: 1vh; }
-        //html { height: 100dvh; overflow: hidden; position: fixed; width: 100%; }
-        //body {
-          //  margin: 0; padding: 0; background-color: #1f2b5e;
-          //  height: 100dvh; width: 100vw; overflow: hidden; position: fixed;
-          //  display: flex; justify-content: center; align-items: center;
-          //  -webkit-tap-highlight-color: transparent; overscroll-behavior: none;
-       // }
-       // #app-container {
-       //     width: 100%; max-width: 430px; height: 100dvh;
-       //     background: var(--app-bg); color: #fff; position: relative;
-       //     display: flex; flex-direction: column;
-       //     box-shadow: 0 0 40px rgba(0,0,0,0.5); overflow: hidden;
-       // }
+        
         :root { --app-bg: #1f2b5e; --vh: 1vh; }
 
 /* iPadバグ対策 */
@@ -83,7 +70,7 @@ body {
         .icon-glow { animation: glow-pulse 4s ease-in-out infinite; }
         .splash-fade-out { opacity: 0; pointer-events: none; transform: scale(1.05); transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
         
-        #splash-screen { position: absolute; inset: 0; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; background-color: var(--app-bg); min-height: 100%;}
+        #splash-screen { position: absolute; inset: 0; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; background-color: var(--app-bg); min-height: 100%; cursor: pointer;}
 
         ::-webkit-scrollbar { width: 5px; }
         ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 5px; }
@@ -91,6 +78,25 @@ body {
         * { scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.2) transparent; }
 
         section.hidden { display: none !important; }
+        
+        /* リスト入れ替え時のフォーカスとドラッグスタイル */
+        .sortable-ghost {
+            opacity: 0.3 !important;
+            background: rgba(255, 255, 255, 0.05) !important;
+            border: 2px dashed rgba(255, 255, 255, 0.6) !important;
+            transform: scale(0.98);
+        }
+        .sortable-drag {
+            opacity: 1 !important;
+            background: rgba(255, 255, 255, 0.15) !important;
+            backdrop-filter: blur(16px) !important;
+            -webkit-backdrop-filter: blur(16px) !important;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.4) !important;
+            border: 1px solid rgba(255, 255, 255, 0.4) !important;
+            transform: scale(1.02);
+            cursor: grabbing !important;
+        }
+        
     </style>
 </head>
 <body>
@@ -118,10 +124,12 @@ body {
                     <svg width="17" height="17" viewBox="0 0 24 24" fill="#3B82F6" class="drop-shadow-md"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
                 </div>
                 <div class="absolute right-5 z-70 opacity-70">
-                    <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" width="38" height="38">
-                        <title>YouTube</title>
-                        <path fill="#ffffff" d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
-                    </svg>
+                    <button onclick="confirmLink('https://www.youtube.com/', 'YouTube トップページ')" class="block active:scale-90 transition-transform">
+                        <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" width="38" height="38">
+                            <title>YouTube</title>
+                            <path fill="#ffffff" d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                        </svg>
+                    </button>
                 </div>
             </div>
         </div>
@@ -148,7 +156,7 @@ body {
             <!-- Prev / Play / Next -->
             <div class="flex items-center justify-center gap-6 flex-1 max-w-[200px]">
                 <button onclick="playPrev()" class="w-10 h-10 flex items-center justify-center text-white active:scale-90 transition"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg></button>
-                <button onclick="togglePlay()" class="w-12 h-12 bg-white rounded-full flex items-center justify-center active:scale-95 shadow-lg transition" style="color: #1f2b5e;";"><svg id="icon-play" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg><svg id="icon-pause" class="hidden" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg></button>
+                <button onclick="togglePlay()" class="w-12 h-12 bg-white rounded-full flex items-center justify-center active:scale-95 shadow-lg transition" style="color: #1f2b5e;"><svg id="icon-play" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg><svg id="icon-pause" class="hidden" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg></button>
                 <button onclick="playNext(true)" class="w-10 h-10 flex items-center justify-center text-white active:scale-90 transition"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg></button>
             </div>
 
@@ -166,18 +174,19 @@ body {
     </section>
 
     <!-- LINKS VIEW -->
+    <!-- LINKS VIEW -->
     <section id="view-links" class="h-full hidden flex flex-col w-full min-h-0 absolute inset-0 bg-[#374892]">
-            <div class="absolute inset-0 z-0 bg-cover bg-center opacity-30" style="background-image: url('/Rin.jpg');"></div>
-            
-            <div class="w-full flex-shrink-0 bg-[#1f2b5e] safe-top pb-3 border-b border-white/5 relative z-20">
-                <div class="relative flex items-center justify-center h-14">
-                    <div class="absolute bottom-0 translate-y-1/4 left-6 z-30"><img src="/character.png" class="w-16 h-16 object-cover rounded-full border-[3px] shadow-xl" style="border-color: #1f2b5e;"></div>
-                    <h1 class="text-[16px] font-bold tracking-widest text-white/90 z-20 uppercase">Rin's LINKS</h1>
-                </div>
+        <!-- 背景画像の重複を1枚にし、透過率を opacity-15 に変更して透明感を高くしました -->
+        <div class="absolute inset-0 z-0 bg-cover bg-center opacity-15" style="background-image: url('/Rin.jpg');"></div>
+        
+        <div class="w-full flex-shrink-0 bg-[#1f2b5e] safe-top pb-3 border-b border-white/5 relative z-20">
+            <div class="relative flex items-center justify-center h-14">
+                <div class="absolute bottom-0 translate-y-1/4 left-6 z-30"><img src="/character.png" class="w-16 h-16 object-cover rounded-full border-[3px] shadow-xl" style="border-color: #1f2b5e;"></div>
+                <h1 class="text-[16px] font-bold tracking-widest text-white/90 z-20 uppercase">Rin's LINKS</h1>
             </div>
-        <div class="absolute inset-0 z-0 bg-cover bg-center opacity-30" style="background-image: url('/Rin.jpg');"></div>
+        </div>
+
         <div class="relative z-10 flex-1 overflow-y-auto px-5 w-full flex flex-col items-center safe-top pt-12 pb-24">
-            
             <!-- プロフィール -->
             <div class="flex flex-col items-center mb-8">
                 <img src="/character.png" class="w-24 h-24 object-cover rounded-full border-[3px] border-white/20 shadow-xl mb-3">
@@ -185,53 +194,80 @@ body {
                 <p class="text-[13px] font-medium text-white/80 tracking-[0.2em] mt-1 drop-shadow">深音vocalist</p>
             </div>
 
-            <!-- ウィジェット風リンク (2カラム) -->
-            <div class="grid grid-cols-2 gap-4 w-full max-w-sm pb-6">
+            <!-- アプリアイコン風 3カラムリンク -->
+            <div class="grid grid-cols-3 gap-x-3 gap-y-6 w-full max-w-[320px] pb-6">
                 <!-- X (Twitter) -->
-                <a href="https://twitter.com/r_____in__" target="_blank" class="flex flex-col items-center justify-center bg-white/10 backdrop-blur-xl p-4 rounded-[24px] border border-white/20 shadow-lg active:scale-95 transition-all">
-                    <div class="text-white mb-2.5"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></div>
-                    <span class="font-bold text-white text-[12px] tracking-wider">X</span>
-                </a>
+                <button onclick="confirmLink('https://twitter.com/r_____in__', 'X (Twitter)')" class="flex flex-col items-center w-full active:scale-90 transition-transform">
+                    <div class="w-[72px] h-[72px] flex items-center justify-center bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 shadow-lg mb-2 relative overflow-hidden group">
+                        <div class="absolute inset-0 bg-white/0 group-active:bg-white/10 transition-colors"></div>
+                        <svg width="30" height="30" viewBox="0 0 24 24" fill="currentColor" class="text-white drop-shadow-md"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                    </div>
+                    <span class="font-bold text-white/90 text-[10px] tracking-wider drop-shadow-md">X</span>
+                </button>
                 <!-- YouTube -->
-                <a href="https://www.youtube.com/@r_____in__" target="_blank" class="flex flex-col items-center justify-center bg-white/10 backdrop-blur-xl p-4 rounded-[24px] border border-white/20 shadow-lg active:scale-95 transition-all">
-                    <div class="text-white mb-2.5"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></div>
-                    <span class="font-bold text-white text-[12px] tracking-wider">YouTube</span>
-                </a>
+                <button onclick="confirmLink('https://www.youtube.com/@r_____in__', 'YouTube')" class="flex flex-col items-center w-full active:scale-90 transition-transform">
+                    <div class="w-[72px] h-[72px] flex items-center justify-center bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 shadow-lg mb-2 relative overflow-hidden group">
+                        <div class="absolute inset-0 bg-white/0 group-active:bg-white/10 transition-colors"></div>
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor" class="text-white drop-shadow-md"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+                    </div>
+                    <span class="font-bold text-white/90 text-[10px] tracking-wider drop-shadow-md">YouTube</span>
+                </button>
                 <!-- ツイキャス -->
-                <a href="#" target="_blank" class="flex flex-col items-center justify-center bg-white/10 backdrop-blur-xl p-4 rounded-[24px] border border-white/20 shadow-lg active:scale-95 transition-all">
-                    <div class="text-white mb-2.5"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg></div>
-                    <span class="font-bold text-white text-[12px] tracking-wider">ツイキャス</span>
-                </a>
+                <button onclick="confirmLink('#', 'ツイキャス')" class="flex flex-col items-center w-full active:scale-90 transition-transform">
+                    <div class="w-[72px] h-[72px] flex items-center justify-center bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 shadow-lg mb-2 relative overflow-hidden group">
+                        <div class="absolute inset-0 bg-white/0 group-active:bg-white/10 transition-colors"></div>
+                        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="drop-shadow-md"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg>
+                    </div>
+                    <span class="font-bold text-white/90 text-[9px] tracking-wider drop-shadow-md">ツイキャス</span>
+                </button>
                 <!-- ニコニコ動画 -->
-                <a href="#" target="_blank" class="flex flex-col items-center justify-center bg-white/10 backdrop-blur-xl p-4 rounded-[24px] border border-white/20 shadow-lg active:scale-95 transition-all">
-                    <div class="text-white mb-2.5"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="15" rx="2" ry="2"/><polyline points="17 2 12 7 7 2"/></svg></div>
-                    <span class="font-bold text-white text-[12px] tracking-wider">ニコニコ動画</span>
-                </a>
+                <button onclick="confirmLink('#', 'ニコニコ動画')" class="flex flex-col items-center w-full active:scale-90 transition-transform">
+                    <div class="w-[72px] h-[72px] flex items-center justify-center bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 shadow-lg mb-2 relative overflow-hidden group">
+                        <div class="absolute inset-0 bg-white/0 group-active:bg-white/10 transition-colors"></div>
+                        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="drop-shadow-md"><rect x="2" y="7" width="20" height="15" rx="2" ry="2"/><polyline points="17 2 12 7 7 2"/></svg>
+                    </div>
+                    <span class="font-bold text-white/90 text-[9px] tracking-wider drop-shadow-md">ニコニコ動画</span>
+                </button>
                 <!-- FANBOX -->
-                <a href="#" target="_blank" class="flex flex-col items-center justify-center bg-white/10 backdrop-blur-xl p-4 rounded-[24px] border border-white/20 shadow-lg active:scale-95 transition-all">
-                    <div class="text-white mb-2.5"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg></div>
-                    <span class="font-bold text-white text-[12px] tracking-wider">FANBOX</span>
-                </a>
+                <button onclick="confirmLink('#', 'FANBOX')" class="flex flex-col items-center w-full active:scale-90 transition-transform">
+                    <div class="w-[72px] h-[72px] flex items-center justify-center bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 shadow-lg mb-2 relative overflow-hidden group">
+                        <div class="absolute inset-0 bg-white/0 group-active:bg-white/10 transition-colors"></div>
+                        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="drop-shadow-md"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+                    </div>
+                    <span class="font-bold text-white/90 text-[10px] tracking-wider drop-shadow-md">FANBOX</span>
+                </button>
                 <!-- BOOTH -->
-                <a href="#" target="_blank" class="flex flex-col items-center justify-center bg-white/10 backdrop-blur-xl p-4 rounded-[24px] border border-white/20 shadow-lg active:scale-95 transition-all">
-                    <div class="text-white mb-2.5"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg></div>
-                    <span class="font-bold text-white text-[12px] tracking-wider">BOOTH</span>
-                </a>
+                <button onclick="confirmLink('#', 'BOOTH')" class="flex flex-col items-center w-full active:scale-90 transition-transform">
+                    <div class="w-[72px] h-[72px] flex items-center justify-center bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 shadow-lg mb-2 relative overflow-hidden group">
+                        <div class="absolute inset-0 bg-white/0 group-active:bg-white/10 transition-colors"></div>
+                        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="drop-shadow-md"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
+                    </div>
+                    <span class="font-bold text-white/90 text-[10px] tracking-wider drop-shadow-md">BOOTH</span>
+                </button>
                 <!-- WEBサイト -->
-                <a href="#" target="_blank" class="flex flex-col items-center justify-center bg-white/10 backdrop-blur-xl p-4 rounded-[24px] border border-white/20 shadow-lg active:scale-95 transition-all">
-                    <div class="text-white mb-2.5"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg></div>
-                    <span class="font-bold text-white text-[12px] tracking-wider">WEBサイト</span>
-                </a>
+                <button onclick="confirmLink('#', 'WEBサイト')" class="flex flex-col items-center w-full active:scale-90 transition-transform">
+                    <div class="w-[72px] h-[72px] flex items-center justify-center bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 shadow-lg mb-2 relative overflow-hidden group">
+                        <div class="absolute inset-0 bg-white/0 group-active:bg-white/10 transition-colors"></div>
+                        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="drop-shadow-md"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+                    </div>
+                    <span class="font-bold text-white/90 text-[10px] tracking-wider drop-shadow-md">WEBサイト</span>
+                </button>
                 <!-- マシュマロ -->
-                <a href="#" target="_blank" class="flex flex-col items-center justify-center bg-white/10 backdrop-blur-xl p-4 rounded-[24px] border border-white/20 shadow-lg active:scale-95 transition-all">
-                    <div class="text-white mb-2.5"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg></div>
-                    <span class="font-bold text-white text-[12px] tracking-wider">マシュマロ</span>
-                </a>
-                <!-- Amazon欲しいものリスト (横長) -->
-                <a href="#" target="_blank" class="col-span-2 flex flex-col items-center justify-center bg-white/10 backdrop-blur-xl p-5 rounded-[24px] border border-white/20 shadow-lg active:scale-95 transition-all">
-                    <div class="text-white mb-2.5"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 12 20 22 4 22 4 12"></polyline><rect x="2" y="7" width="20" height="5"></rect><line x1="12" y1="22" x2="12" y2="7"></line><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"></path><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"></path></svg></div>
-                    <span class="font-bold text-white text-[13px] tracking-wider">Amazon欲しいものリスト</span>
-                </a>
+                <button onclick="confirmLink('#', 'マシュマロ')" class="flex flex-col items-center w-full active:scale-90 transition-transform">
+                    <div class="w-[72px] h-[72px] flex items-center justify-center bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 shadow-lg mb-2 relative overflow-hidden group">
+                        <div class="absolute inset-0 bg-white/0 group-active:bg-white/10 transition-colors"></div>
+                        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="drop-shadow-md"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                    </div>
+                    <span class="font-bold text-white/90 text-[10px] tracking-wider drop-shadow-md">マシュマロ</span>
+                </button>
+                <!-- Amazon欲しいものリスト -->
+                <button onclick="confirmLink('#', 'Amazon欲しいものリスト')" class="flex flex-col items-center w-full active:scale-90 transition-transform">
+                    <div class="w-[72px] h-[72px] flex items-center justify-center bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 shadow-lg mb-2 relative overflow-hidden group">
+                        <div class="absolute inset-0 bg-white/0 group-active:bg-white/10 transition-colors"></div>
+                        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="drop-shadow-md"><polyline points="20 12 20 22 4 22 4 12"></polyline><rect x="2" y="7" width="20" height="5"></rect><line x1="12" y1="22" x2="12" y2="7"></line><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"></path><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"></path></svg>
+                    </div>
+                    <span class="font-bold text-white/90 text-[9px] tracking-wider drop-shadow-md text-center leading-tight">Amazon<br>欲しいもの</span>
+                </button>
             </div>
         </div>
     </section>
@@ -261,7 +297,7 @@ body {
                         <svg id="eye-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
                     </button>
                 </div>
-                <button onclick="saveApiKey(event)" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 rounded-xl shadow-lg active:scale-95 transition">保存して適用</button>
+                <button onclick="saveApiKey(event)" class="w-full bg-[#0b1024] border-[2px] border-blue-300/60 hover:bg-[#121936] text-white font-bold py-3.5 rounded-2xl shadow-xl active:scale-95 transition-all tracking-widest text-[14px]">保存して適用</button>
             </div>
             
             <div class="mt-8">
@@ -271,14 +307,21 @@ body {
     </section>
 
     <!-- EDIT PLAYLIST VIEW -->
-    <section id="view-edit-list" class="hidden absolute inset-0 z-50 bg-[#374892] flex flex-col w-full h-full transform transition-transform translate-y-full">
-        <div class="w-full flex-shrink-0 bg-[#1f2b5e] safe-top pb-2 border-b border-white/5 flex items-center justify-between px-4 h-[calc(env(safe-area-inset-top)+56px)]">
-            <button onclick="closeEditPlaylist()" class="text-white p-2 active:opacity-50"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button>
-            <h1 class="text-[14px] font-bold tracking-widest text-white/90">リスト編集</h1><div class="w-10"></div> 
+    <!-- EDIT PLAYLIST VIEW -->
+    <section id="view-edit-list" class="hidden absolute inset-0 z-50 bg-[#1f2b5e]/80 backdrop-blur-2xl flex flex-col w-full h-full transform transition-transform translate-y-full">
+        <!-- ヘッダー -->
+        <div class="w-full flex-shrink-0 bg-transparent safe-top pb-2 flex items-center justify-between px-4 h-[calc(env(safe-area-inset-top)+56px)] border-b border-white/10 relative z-20">
+            <button onclick="closeEditPlaylist()" class="text-white p-2 active:opacity-50 transition-opacity"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button>
+            <h1 class="text-[14px] font-bold tracking-widest text-white/90 drop-shadow-md">プレイリストの編集</h1>
+            <div class="w-10"></div> 
         </div>
-        <div class="flex-1 overflow-y-auto p-4" id="edit-playlist-container"></div>
-        <div class="p-4 bg-[#1f2b5e] safe-bottom border-t border-white/5">
-            <button onclick="saveEditedPlaylist()" class="w-full bg-white/10 border border-white/20 text-white font-bold py-3.5 rounded-xl shadow-lg active:bg-white/20 transition">保存して適用</button>
+        
+        <!-- リスト本体（下部のボタンに被らないよう pb-28 で余白を確保） -->
+        <div class="flex-1 overflow-y-auto p-4 pb-28 relative z-10" id="edit-playlist-container"></div>
+        
+        <!-- ガラススタイルのフローティングフッター -->
+        <div class="absolute bottom-0 left-0 w-full p-5 safe-bottom pt-4 bg-white/5 backdrop-blur-3xl border-t border-white/10 z-30 shadow-[0_-10px_30px_rgba(0,0,0,0.3)]">
+            <button onclick="saveEditedPlaylist()" class="w-full bg-[#0b1024] border-[2px] border-blue-300/60 hover:bg-[#121936] text-white font-bold py-3.5 rounded-2xl shadow-xl active:scale-95 transition-all tracking-widest text-[14px]">保存して適用</button>
         </div>
     </section>
 
@@ -592,15 +635,29 @@ body {
         const container = document.getElementById('edit-playlist-container');
         const hLine = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>';
         const hSlash = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path><line x1="2" y1="2" x2="22" y2="22"></line></svg>';
-        container.innerHTML = editingPlaylist.map((item, i) => `<div class="flex items-center gap-3 mb-2 p-2 bg-black/20 rounded-xl border border-white/10 ${item.isHidden ? 'opacity-40 grayscale' : ''}">
-            <div class="drag-handle text-white/30 p-2"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line></svg></div>
-            <img src="${item.thumb}" class="w-14 aspect-video object-cover rounded shadow">
-            <div class="flex-1 truncate text-[11px] font-bold">${item.title}</div>
-            <button onclick="toggleVisibility('${item.id}')" class="p-2 bg-white/5 rounded-full">${item.isHidden ? hSlash : hLine}</button></div>`).join('');
+        
+        container.innerHTML = editingPlaylist.map((item, i) => `<div class="flex items-center gap-3 mb-3 p-2.5 bg-white/10 backdrop-blur-xl rounded-2xl border border-white/20 shadow-lg transition-opacity ${item.isHidden ? 'opacity-40 grayscale' : ''}">
+            <div class="drag-handle text-white/50 p-2 cursor-grab active:text-white transition-colors flex items-center justify-center -ml-1"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line></svg></div>
+            <img src="${item.thumb}" class="w-16 aspect-video object-cover rounded-lg shadow-sm">
+            <div class="flex-1 truncate text-[12px] font-bold text-white/90 tracking-wide">${item.title}</div>
+            <button onclick="toggleVisibility('${item.id}')" class="p-2.5 bg-white/5 border border-white/10 rounded-full text-white/80 active:bg-white/20 transition-all">${item.isHidden ? hSlash : hLine}</button></div>`).join('');
+            
         if (sortableInst) sortableInst.destroy();
-        sortableInst = new Sortable(container, { handle: '.drag-handle', animation: 150, onEnd: (evt) => { const item = editingPlaylist.splice(evt.oldIndex, 1)[0]; editingPlaylist.splice(evt.newIndex, 0, item); } });
+        sortableInst = new Sortable(container, { 
+            handle: '.drag-handle', 
+            animation: 250, 
+            ghostClass: 'sortable-ghost', // 元あった場所（ドロップ先）の点線ガイドライン
+            dragClass: 'sortable-drag',   // つかんでいる最中の浮き上がりスタイル
+            fallbackTolerance: 5,         // タッチ時の「遊び」を持たせ、スクロールとドラッグの競合を防ぐ
+            delay: 150,                   // 150ms長押しでドラッグ開始
+            delayOnTouchOnly: true,       // スマホ（タッチ）の時だけ長押しを必須にする
+            onEnd: (evt) => { 
+                const item = editingPlaylist.splice(evt.oldIndex, 1)[0]; 
+                editingPlaylist.splice(evt.newIndex, 0, item); 
+            } 
+        });
     }
-
+    
     function toggleVisibility(id) {
         const item = editingPlaylist.find(p => p.id === id);
         if (item) { item.isHidden = !item.isHidden; renderEditPlaylist(); }
@@ -617,6 +674,40 @@ body {
     function parseISO8601(d) { const m = d.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/); return formatSeconds(parseInt(m[1] || 0) * 3600 + parseInt(m[2] || 0) * 60 + parseInt(m[3] || 0)); }
     function formatSeconds(s) { return Math.floor(s / 60) + ":" + Math.floor(s % 60).toString().padStart(2, '0'); }
     function updateStatusUI() { document.getElementById('status-last-update').innerText = localStorage.getItem('last_fetch_datetime') || '未取得'; }
+// === リンク確認モーダル用の処理 ===
+    let pendingUrl = '';
+    
+    function confirmLink(url, siteName) {
+        pendingUrl = url;
+        document.getElementById('link-modal-text').innerHTML = `<span class="font-bold text-white">${siteName}</span><br>を開きますか？`;
+        
+        document.getElementById('link-modal-btn').onclick = () => {
+            window.open(pendingUrl, '_blank');
+            closeLinkModal();
+        };
+        
+        const modal = document.getElementById('link-modal');
+        const box = document.getElementById('link-modal-box');
+        
+        modal.classList.remove('hidden');
+        setTimeout(() => {
+            modal.classList.remove('opacity-0');
+            box.classList.remove('scale-95');
+            box.classList.add('scale-100');
+        }, 10);
+    }
+
+    function closeLinkModal() {
+        const modal = document.getElementById('link-modal');
+        const box = document.getElementById('link-modal-box');
+        
+        modal.classList.add('opacity-0');
+        box.classList.remove('scale-100');
+        box.classList.add('scale-95');
+        
+        setTimeout(() => modal.classList.add('hidden'), 300);
+    }
+
 </script>
 
 </body>
