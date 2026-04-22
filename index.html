@@ -19,7 +19,7 @@
         //:root { --app-bg: #1f2b5e; --vh: 1vh; }
         html { height: 100dvh; overflow: hidden; position: fixed; width: 100%; }
         body {
-            margin: 0; padding: 0; background-color: #0f172a;
+            margin: 0; padding: 0; background-color: #1f2b5e;
             height: 100dvh; width: 100vw; overflow: hidden; position: fixed;
             display: flex; justify-content: center; align-items: center;
             -webkit-tap-highlight-color: transparent; overscroll-behavior: none;
@@ -41,7 +41,7 @@ html, body {
 body {
     margin: 0;
     padding: 0;
-    background-color: #0f172a;
+    background-color: #1f2b5e;
 
     display: flex;
     justify-content: center;
@@ -69,8 +69,10 @@ body {
 }
         @media (max-width: 450px) { body { background-color: var(--app-bg); } }
         .safe-top { padding-top: calc(env(safe-area-inset-top) + 4px); }
-        .safe-bottom { padding-bottom: calc(env(safe-area-inset-bottom) + 8px); }
-
+        .safe-bottom {
+    padding-bottom: calc(env(safe-area-inset-bottom) + 8px);
+    background: #1f2b5e; /* ← 追加 */
+}
         input[type="range"] { -webkit-appearance: none; background: transparent; cursor: pointer; }
         input[type="range"]::-webkit-slider-runnable-track { background: rgba(255,255,255,0.2); border-radius: 4px; height: 4px; }
         input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; background: #fff; width: 14px; height: 14px; border-radius: 50%; margin-top: -5px; box-shadow: 0 2px 4px rgba(0,0,0,0.3); }
@@ -81,7 +83,7 @@ body {
         .icon-glow { animation: glow-pulse 4s ease-in-out infinite; }
         .splash-fade-out { opacity: 0; pointer-events: none; transform: scale(1.05); transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
         
-        #splash-screen { position: absolute; inset: 0; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; background-color: var(--app-bg); }
+        #splash-screen { position: absolute; inset: 0; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; background-color: var(--app-bg); min-height: 100%;}
 
         ::-webkit-scrollbar { width: 5px; }
         ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 5px; }
@@ -146,7 +148,7 @@ body {
             <!-- Prev / Play / Next -->
             <div class="flex items-center justify-center gap-6 flex-1 max-w-[200px]">
                 <button onclick="playPrev()" class="w-10 h-10 flex items-center justify-center text-white active:scale-90 transition"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg></button>
-                <button onclick="togglePlay()" class="w-12 h-12 bg-white rounded-full flex items-center justify-center active:scale-95 shadow-lg transition" style="color: var(--app-bg);"><svg id="icon-play" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg><svg id="icon-pause" class="hidden" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg></button>
+                <button onclick="togglePlay()" class="w-12 h-12 bg-white rounded-full flex items-center justify-center active:scale-95 shadow-lg transition" style="color: #1f2b5e;";"><svg id="icon-play" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg><svg id="icon-pause" class="hidden" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg></button>
                 <button onclick="playNext(true)" class="w-10 h-10 flex items-center justify-center text-white active:scale-90 transition"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg></button>
             </div>
 
