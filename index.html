@@ -18,11 +18,17 @@
     <style>
         /* 基本設定：スクロールバウンス(引っ張り)の防止 */
         html, body {
-            margin: 0;
-            background-color: #0b1024;
-            overscroll-behavior: none; /* iOS特有のゴムのようなスクロールを無効化 */
-            -webkit-tap-highlight-color: transparent;
-        }
+    margin: 0; padding: 0;  /* padding-bottom: env(...) は削除 */
+    height: 100%;
+    background-color: #0b1024;
+    overscroll-behavior: none;
+    -webkit-tap-highlight-color: transparent;
+    overflow: hidden;
+}
+html {
+    height: -webkit-fill-available;
+}
+
 
         /* スクロールバー非表示 */
         * { scrollbar-width: none; }
@@ -63,7 +69,8 @@
       ★ 究極のラッパー構造 ★
       画面(dvh)全体を覆い、その中央にアプリコンテナを配置します。
     -->
-    <div class="w-full h-[100dvh] flex items-center justify-center bg-[#0b1024]">
+    <div class="w-full h-full flex items-start justify-center bg-[#0b1024]"
+     style="padding-bottom: env(safe-area-inset-bottom);">
         
         <!-- アプリコンテナ本体 -->
         <div id="app-container" class="relative w-full h-full max-h-[950px] max-w-[430px] bg-[#1f2b5e] flex flex-col md:rounded-3xl md:border md:border-white/10 shadow-2xl overflow-hidden">
