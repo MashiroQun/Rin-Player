@@ -14,7 +14,66 @@
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
-    <link rel="stylesheet" href="style.css">
+
+    <style>
+        /* PCブラウザ向けの中央寄せ・背景設定 */
+        body {
+            background-color: #0b1024;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* スマホ等で画面を横に向けたときの警告表示 */
+        @media screen and (max-width: 850px) and (orientation: landscape) {
+            #orientation-msg { display: flex !important; }
+        }
+
+        /* スクロールバーの非表示・カスタマイズ */
+        * { scrollbar-width: none; } /* Firefox */
+        *::-webkit-scrollbar { display: none; } /* Chrome/Safari */
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* セーフエリアの自動保護 (iPhoneノッチ・ホームバー対応) */
+        .safe-top { padding-top: max(env(safe-area-inset-top), 12px); }
+        .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom), 12px); }
+
+        /* Range Slider (シークバー) */
+        input[type="range"] { -webkit-appearance: none; background: transparent; cursor: pointer; }
+        input[type="range"]::-webkit-slider-runnable-track { background: rgba(255,255,255,0.2); border-radius: 4px; height: 4px; }
+        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; background: #fff; width: 14px; height: 14px; border-radius: 50%; margin-top: -5px; box-shadow: 0 2px 4px rgba(0,0,0,0.3); }
+
+        /* アニメーション */
+        @keyframes float-large { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-20px); } }
+        .animate-float-large { animation: float-large 3.5s ease-in-out infinite; }
+
+        @keyframes glow-pulse { 0%, 100% { box-shadow: 0 0 20px 5px rgba(59, 130, 246, 0.3); } 50% { box-shadow: 0 0 60px 15px rgba(59, 130, 246, 0.6); } }
+        .icon-glow { animation: glow-pulse 4s ease-in-out infinite; }
+
+        .splash-fade-out { opacity: 0; pointer-events: none; transform: scale(1.05); transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
+
+        /* SortableJS ドラッグ用スタイル */
+        .sortable-ghost {
+            opacity: 0.3 !important;
+            background: rgba(255, 255, 255, 0.05) !important;
+            border: 2px dashed rgba(255, 255, 255, 0.6) !important;
+            transform: scale(0.98);
+        }
+        .sortable-drag {
+            opacity: 1 !important;
+            background: rgba(255, 255, 255, 0.15) !important;
+            backdrop-filter: blur(16px) !important;
+            -webkit-backdrop-filter: blur(16px) !important;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.4) !important;
+            border: 1px solid rgba(255, 255, 255, 0.4) !important;
+            transform: scale(1.02);
+            cursor: grabbing !important;
+        }
+    </style>
 </head>
 <body class="bg-[#0b1024] h-dvh w-full overflow-hidden flex items-center justify-center overscroll-none select-none">
 
@@ -213,7 +272,7 @@
         </section>
 
         <!-- Info Modal -->
-        <div id="info-modal" class="hidden absolute inset-0 z-[100] bg-black/50 flex flex-col items-center justify-center p-6 transition-opacity opacity-0" onclick="if(event.target === this) closeInfoModal()">
+        <div id="info-modal" class="hidden absolute inset-0 z-[100] bg-black/50 flex-col items-center justify-center p-6 transition-opacity opacity-0" onclick="if(event.target === this) closeInfoModal()">
             <div class="w-full max-w-[380px] max-h-[80%] bg-[#1f2b5e]/90 backdrop-blur-lg border border-white/20 rounded-3xl flex flex-col overflow-hidden shadow-2xl transform scale-95 transition-transform" id="info-modal-box">
                 <div class="bg-black/30 px-4 py-3 border-b border-white/10 flex justify-between items-center flex-shrink-0">
                     <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#3B82F6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
@@ -227,8 +286,8 @@
             </div>
         </div>
 
-        <!-- Link Modal (新規追加) -->
-        <div id="link-modal" class="hidden absolute inset-0 z-[100] bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center p-6 transition-opacity opacity-0" onclick="if(event.target === this) closeLinkModal()">
+        <!-- Link Modal -->
+        <div id="link-modal" class="hidden absolute inset-0 z-[100] bg-black/60 backdrop-blur-sm flex-col items-center justify-center p-6 transition-opacity opacity-0" onclick="if(event.target === this) closeLinkModal()">
             <div id="link-modal-box" class="w-full max-w-[300px] bg-[#2b3978] border border-white/20 rounded-3xl p-6 text-center transform scale-95 transition-transform shadow-2xl">
                 <p id="link-modal-text" class="text-sm text-white/90 mb-6 leading-relaxed tracking-wide"></p>
                 <div class="flex gap-3">
@@ -240,6 +299,400 @@
 
     </div>
 
-    <script src="script.js"></script>
+    <!-- ここからJavaScript -->
+    <script>
+        const MY_API_KEY = "AIzaSyBQ5nPI4F-ATGGHXi5CmjAUCmpf05KPpZU"; // 本番では保護してください
+        const TARGET_HANDLE = '@r_____in__';
+        const CACHE_KEY = 'video_cache_v12';
+
+        let player, appStarted = false;
+        let allPlaylist = [], activePlaylist = [], playbackSequence =[], currentSeqIndex = 0;
+        let sortableInst = null, isShuffle = false, repeatMode = 0;
+        let editingPlaylist =[];
+        let tickInterval = null; 
+
+        // === 画面回転監視 ===
+        function checkOrientation() {
+            const msg = document.getElementById('orientation-msg');
+            if (window.innerWidth < window.innerHeight && window.matchMedia("(orientation: landscape)").matches) {
+                msg.classList.remove('hidden');
+                msg.classList.add('flex');
+            } else {
+                msg.classList.add('hidden');
+                msg.classList.remove('flex');
+            }
+        }
+        window.addEventListener('resize', checkOrientation);
+        window.addEventListener('orientationchange', checkOrientation);
+
+        // === YouTube Iframe API ===
+        const tag = document.createElement('script');
+        tag.src = "https://www.youtube.com/iframe_api";
+        document.head.appendChild(tag);
+
+        function onYouTubeIframeAPIReady() {
+            player = new YT.Player('player', {
+                height: '100%', width: '100%',
+                playerVars: { 'playsinline': 1, 'controls': 0, 'modestbranding': 1, 'rel': 0, 'origin': window.location.origin },
+                events: { 'onStateChange': onPlayerStateChange, 'onError': onPlayerError }
+            });
+        }
+
+        // === アプリ起動 ===
+        async function startApp() {
+            if (appStarted) return; 
+            appStarted = true;
+            checkOrientation();
+
+            const splash = document.getElementById('splash-screen');
+            splash.classList.add('splash-fade-out');
+            setTimeout(() => { 
+                splash.classList.add('hidden'); 
+                splash.classList.remove('flex'); 
+            }, 600);
+
+            if (player && typeof player.playVideo === 'function') {
+                try { 
+                    player.mute(); 
+                    player.loadVideoById('dQw4w9WgXcQ'); 
+                    player.playVideo(); 
+                    setTimeout(() => { player.pauseVideo(); player.unMute(); }, 200); 
+                } catch (e) {}
+            }
+
+            let apiKey = localStorage.getItem('yt_api_key') || MY_API_KEY;
+            if (apiKey) { 
+                document.getElementById('api-key-input').value = apiKey; 
+                await initData(apiKey); 
+            } else { 
+                switchTab('edit'); 
+            }
+            updateStatusUI();
+        }
+
+        // === データ取得と管理 ===
+        async function saveApiKey(e) {
+            const key = document.getElementById('api-key-input').value.trim();
+            if (!key) { alert('APIキーを入力してください。'); return; }
+            localStorage.setItem('yt_api_key', key);
+            
+            const btn = e.currentTarget;
+            const originalText = btn.innerText;
+            btn.innerText = "保存中...";
+            try {
+                await initData(key);
+                updateStatusUI();
+                btn.innerText = "保存・適用完了！";
+            } catch(err) {
+                btn.innerText = "エラーが発生しました";
+            }
+            setTimeout(() => btn.innerText = originalText, 2000);
+        }
+
+        async function initData(apiKey) {
+            const today = new Date().toISOString().split('T')[0];
+            const cached = localStorage.getItem(CACHE_KEY);
+            if (cached && localStorage.getItem('last_fetch_date') === today) {
+                allPlaylist = JSON.parse(cached);
+            } else {
+                await fetchFullPlaylist(apiKey);
+            }
+            updateActivePlaylist();
+            if (activePlaylist.length > 0) playTrackBySequence(0, false);
+        }
+
+        async function fetchFullPlaylist(apiKey) {
+            try {
+                const chRes = await fetch("https://www.googleapis.com/youtube/v3/channels?part=contentDetails&forHandle=" + TARGET_HANDLE + "&key=" + apiKey);
+                const chData = await chRes.json();
+                if (!chData.items || chData.items.length === 0) { console.error('Channel not found or API error'); return; }
+                const uploadsId = chData.items[0].contentDetails.relatedPlaylists.uploads;
+
+                let allItems =[], nextPageToken = '';
+                do {
+                    const url = "https://www.googleapis.com/youtube/v3/playlistItems?part=snippet,contentDetails&maxResults=50&playlistId=" + uploadsId + "&key=" + apiKey + (nextPageToken ? "&pageToken=" + nextPageToken : '');
+                    const plRes = await fetch(url);
+                    const plData = await plRes.json();
+                    allItems = allItems.concat(plData.items ||[]);
+                    nextPageToken = plData.nextPageToken || '';
+                } while (nextPageToken);
+
+                let allVideos =[];
+                for (let i = 0; i < allItems.length; i += 50) {
+                    const chunk = allItems.slice(i, i + 50);
+                    const vIds = chunk.map(item => item.contentDetails.videoId).join(',');
+                    const vRes = await fetch("https://www.googleapis.com/youtube/v3/videos?part=contentDetails,snippet&id=" + vIds + "&key=" + apiKey);
+                    const vData = await vRes.json();
+                    if(vData.items) allVideos = allVideos.concat(vData.items);
+                }
+
+                allPlaylist = allVideos.filter(v => v.contentDetails.duration.includes('M')).map(v => ({
+                    id: v.id, title: v.snippet.title, thumb: v.snippet.thumbnails.medium.url,
+                    duration: parseISO8601(v.contentDetails.duration), description: v.snippet.description, isHidden: false
+                }));
+                localStorage.setItem(CACHE_KEY, JSON.stringify(allPlaylist));
+                localStorage.setItem('last_fetch_date', new Date().toISOString().split('T')[0]);
+                localStorage.setItem('last_fetch_datetime', new Date().toLocaleString());
+            } catch (e) {
+                console.error('fetchFullPlaylist error:', e);
+                alert('プレイリストの取得に失敗しました。APIキーを確認してください。');
+            }
+        }
+
+        function updateActivePlaylist(preserveTrackId = null) {
+            activePlaylist = allPlaylist.filter(p => !p.isHidden);
+            playbackSequence = activePlaylist.map((_, i) => i);
+            if (isShuffle) playbackSequence.sort(() => Math.random() - 0.5);
+            if (preserveTrackId) {
+                const activeIndex = activePlaylist.findIndex(t => t.id === preserveTrackId);
+                const seqIndex = playbackSequence.indexOf(activeIndex);
+                currentSeqIndex = seqIndex !== -1 ? seqIndex : 0;
+            }
+            renderPlaylist();
+        }
+
+        function renderPlaylist() {
+            const container = document.getElementById('playlist-container');
+            container.innerHTML = activePlaylist.map((item, index) => {
+                const isPlaying = (index === playbackSequence[currentSeqIndex]);
+                const border = isPlaying ? 'border-white/40 bg-white/10' : 'border-transparent bg-white/5';
+                return `<div id="track-${index}" onclick="playTrackByIndex(${index})" class="flex items-center gap-3 mb-2.5 p-2 rounded-xl h-[64px] transition-all border-2 ${border} cursor-pointer">
+                    <img src="${item.thumb}" class="h-full aspect-video object-cover rounded shadow flex-shrink-0">
+                    <div class="flex-1 min-w-0"><div class="text-[12px] font-bold truncate ${isPlaying ? 'text-white' : 'text-white/60'}">${item.title}</div><div class="text-[9px] text-white/40 mt-1 font-bold uppercase tracking-widest">TRACK ${index + 1} • ${item.duration}</div></div>
+                    ${isPlaying ? '<div class="w-2 h-2 bg-blue-400 rounded-full animate-pulse shadow-[0_0_8px_rgba(59,130,246,0.8)]"></div>' : ''}</div>`;
+            }).join('');
+        }
+
+        // === プレイヤー制御 ===
+        function playTrackBySequence(seqIndex, autoPlay = true) {
+            if (activePlaylist.length === 0) return;
+            currentSeqIndex = seqIndex;
+            const track = activePlaylist[playbackSequence[currentSeqIndex]];
+            if (autoPlay) player.loadVideoById(track.id); else player.cueVideoById(track.id);
+            renderPlaylist();
+            const el = document.getElementById('track-' + playbackSequence[currentSeqIndex]);
+            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        function playTrackByIndex(activeIndex) {
+            const s = playbackSequence.indexOf(activeIndex);
+            if (s !== -1) playTrackBySequence(s, true);
+        }
+
+        function togglePlay() {
+            if (activePlaylist.length === 0) return;
+            player.getPlayerState() === 1 ? player.pauseVideo() : player.playVideo();
+        }
+
+        function playNext(m = false) {
+            if (activePlaylist.length === 0) return;
+            if (currentSeqIndex >= playbackSequence.length - 1) {
+                if (repeatMode === 1 || isShuffle) playTrackBySequence(0, true);
+                else playTrackBySequence(0, false);
+            } else {
+                playTrackBySequence(currentSeqIndex + 1, true);
+            }
+        }
+
+        function playPrev() {
+            if (activePlaylist.length === 0) return;
+            if (currentSeqIndex <= 0) playTrackBySequence(playbackSequence.length - 1, true);
+            else playTrackBySequence(currentSeqIndex - 1, true);
+        }
+
+        function onPlayerStateChange(e) {
+            const play = document.getElementById('icon-play'), pause = document.getElementById('icon-pause');
+            if (e.data === 1) { play.classList.add('hidden'); pause.classList.remove('hidden'); updateTick(); }
+            else { play.classList.remove('hidden'); pause.classList.add('hidden'); }
+            if (e.data === 0) { repeatMode === 2 ? playTrackBySequence(currentSeqIndex, true) : playNext(false); }
+        }
+
+        function onPlayerError() { setTimeout(() => playNext(false), 1000); }
+
+        function updateTick() {
+            if (tickInterval) clearInterval(tickInterval);
+            tickInterval = setInterval(() => {
+                if (player.getPlayerState() !== 1) { clearInterval(tickInterval); tickInterval = null; return; }
+                const curr = player.getCurrentTime(), total = player.getDuration();
+                document.getElementById('current-time').innerText = formatSeconds(curr);
+                document.getElementById('duration-total').innerText = formatSeconds(total);
+                document.getElementById('seek-bar').value = (curr / total) * 100 || 0;
+            }, 500);
+        }
+
+        document.getElementById('seek-bar').oninput = function () {
+            player.seekTo(player.getDuration() * (this.value / 100));
+            if (player.getPlayerState() === 1) updateTick();
+        };
+
+        function toggleRepeat() {
+            repeatMode = (repeatMode + 1) % 3;
+            const btn = document.getElementById('btn-repeat'), ind = document.getElementById('repeat-1-indicator');
+            btn.classList.toggle('opacity-40', repeatMode === 0);
+            btn.classList.toggle('opacity-100', repeatMode !== 0);
+            ind.classList.toggle('hidden', repeatMode !== 2);
+        }
+
+        function toggleShuffle() {
+            const currentTrackId = activePlaylist[playbackSequence[currentSeqIndex]]?.id;
+            isShuffle = !isShuffle;
+            document.getElementById('btn-shuffle').classList.toggle('opacity-40', !isShuffle);
+            document.getElementById('btn-shuffle').classList.toggle('opacity-100', isShuffle);
+            updateActivePlaylist(currentTrackId);
+        }
+
+        // === タブ・UI切り替え処理 ===
+        function switchTab(tab) {
+            ['player', 'links', 'edit'].forEach(id => {
+                const view = document.getElementById('view-' + id);
+                view.classList.add('hidden');
+                view.classList.remove('flex');
+                
+                const nav = document.getElementById('nav-' + id);
+                nav.classList.remove('text-white'); 
+                nav.classList.add('text-white/30');
+            });
+            
+            const activeView = document.getElementById('view-' + tab);
+            activeView.classList.remove('hidden');
+            activeView.classList.add('flex');
+            
+            const activeNav = document.getElementById('nav-' + tab);
+            activeNav.classList.remove('text-white/30');
+            activeNav.classList.add('text-white');
+        }
+
+        // === モーダル関連 ===
+        function openInfoModal() {
+            if (activePlaylist.length === 0) return;
+            const track = activePlaylist[playbackSequence[currentSeqIndex]];
+            const modal = document.getElementById('info-modal');
+            const box = document.getElementById('info-modal-box');
+            
+            document.getElementById('info-modal-content').innerHTML = (track.description || "No description.").replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" class="text-blue-400 underline">$1</a>');
+            document.getElementById('info-modal-link').href = "https://www.youtube.com/watch?v=" + track.id;
+            
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                box.classList.remove('scale-95');
+            }, 10);
+        }
+
+        function closeInfoModal() {
+            const modal = document.getElementById('info-modal');
+            const box = document.getElementById('info-modal-box');
+            modal.classList.add('opacity-0');
+            box.classList.add('scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }, 300);
+        }
+
+        function toggleApiKeyVisibility() {
+            const input = document.getElementById('api-key-input');
+            const isText = input.type === 'text';
+            input.type = isText ? 'password' : 'text';
+            document.getElementById('eye-icon').style.opacity = isText ? '0.4' : '1';
+        }
+
+        function openEditPlaylist() {
+            editingPlaylist = JSON.parse(JSON.stringify(allPlaylist));
+            renderEditPlaylist();
+            const v = document.getElementById('view-edit-list');
+            v.classList.remove('hidden');
+            v.classList.add('flex');
+            setTimeout(() => v.classList.remove('translate-y-full'), 10);
+        }
+
+        function closeEditPlaylist() {
+            const v = document.getElementById('view-edit-list');
+            v.classList.add('translate-y-full');
+            setTimeout(() => {
+                v.classList.add('hidden');
+                v.classList.remove('flex');
+            }, 300);
+        }
+
+        function renderEditPlaylist() {
+            const container = document.getElementById('edit-playlist-container');
+            const hLine = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>';
+            const hSlash = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path><line x1="2" y1="2" x2="22" y2="22"></line></svg>';
+            
+            container.innerHTML = editingPlaylist.map((item, i) => `<div class="flex items-center gap-3 mb-3 p-2.5 bg-white/10 backdrop-blur-xl rounded-2xl border border-white/20 shadow-lg transition-opacity ${item.isHidden ? 'opacity-40 grayscale' : ''}">
+                <div class="drag-handle text-white/50 p-2 cursor-grab active:text-white transition-colors flex items-center justify-center -ml-1"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line></svg></div>
+                <img src="${item.thumb}" class="w-16 aspect-video object-cover rounded-lg shadow-sm">
+                <div class="flex-1 truncate text-[12px] font-bold text-white/90 tracking-wide">${item.title}</div>
+                <button onclick="toggleVisibility('${item.id}')" class="p-2.5 bg-white/5 border border-white/10 rounded-full text-white/80 active:bg-white/20 transition-all">${item.isHidden ? hSlash : hLine}</button></div>`).join('');
+                
+            if (sortableInst) sortableInst.destroy();
+            sortableInst = new Sortable(container, { 
+                handle: '.drag-handle', animation: 250, 
+                ghostClass: 'sortable-ghost', dragClass: 'sortable-drag', 
+                fallbackTolerance: 5, delay: 150, delayOnTouchOnly: true,
+                onEnd: (evt) => { 
+                    const item = editingPlaylist.splice(evt.oldIndex, 1)[0]; 
+                    editingPlaylist.splice(evt.newIndex, 0, item); 
+                } 
+            });
+        }
+
+        function toggleVisibility(id) {
+            const item = editingPlaylist.find(p => p.id === id);
+            if (item) { item.isHidden = !item.isHidden; renderEditPlaylist(); }
+        }
+
+        function saveEditedPlaylist() {
+            allPlaylist = editingPlaylist;
+            localStorage.setItem(CACHE_KEY, JSON.stringify(allPlaylist));
+            const currentTrackId = activePlaylist[playbackSequence[currentSeqIndex]]?.id;
+            updateActivePlaylist(currentTrackId);
+            closeEditPlaylist();
+        }
+
+        function parseISO8601(d) { const m = d.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/); return formatSeconds(parseInt(m[1] || 0) * 3600 + parseInt(m[2] || 0) * 60 + parseInt(m[3] || 0)); }
+        function formatSeconds(s) { return Math.floor(s / 60) + ":" + Math.floor(s % 60).toString().padStart(2, '0'); }
+        function updateStatusUI() { document.getElementById('status-last-update').innerText = localStorage.getItem('last_fetch_datetime') || '未取得'; }
+
+        // === リンク確認モーダル ===
+        let pendingUrl = '';
+
+        function confirmLink(url, siteName) {
+            pendingUrl = url;
+            document.getElementById('link-modal-text').innerHTML = `<span class="font-bold text-white text-base">${siteName}</span><br>を開きますか？`;
+            
+            document.getElementById('link-modal-btn').onclick = () => {
+                window.open(pendingUrl, '_blank');
+                closeLinkModal();
+            };
+            
+            const modal = document.getElementById('link-modal');
+            const box = document.getElementById('link-modal-box');
+            
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                box.classList.remove('scale-95');
+                box.classList.add('scale-100');
+            }, 10);
+        }
+
+        function closeLinkModal() {
+            const modal = document.getElementById('link-modal');
+            const box = document.getElementById('link-modal-box');
+            
+            modal.classList.add('opacity-0');
+            box.classList.remove('scale-100');
+            box.classList.add('scale-95');
+            
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }, 300);
+        }
+    </script>
 </body>
 </html>
