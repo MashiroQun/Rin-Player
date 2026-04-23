@@ -17,25 +17,26 @@
 
     <style>
                 /* 基本設定：スクロールバウンス(引っ張り)の防止 */
-                /* 基本設定：スクロールバウンス(引っ張り)の防止 */
         html, body {
             margin: 0;
             padding: 0;
             width: 100%;
             
-            /* ▼ ここがポイント！ ▼ */
-            /* 元の 100dvh に、これから下に追加するパディングの分を先に足しておく */
-            height: calc(100dvh + env(safe-area-inset-bottom));
-            
-            /* ましろさんのアイデア：これでPWAの初期描画バグを強制的に抑え込む */
-            padding-bottom: env(safe-area-inset-bottom);
-            /* ▲ ここまで ▲ */
+            /* ▼ dvhをやめて、絶対的な 100% と fixed を組み合わせる ▼ */
+            height: 100%;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            /* ▲ これでiOSの計算を無視して画面の四隅に強制ピン留めされます ▲ */
 
             box-sizing: border-box;
             background-color: #0b1024;
             overscroll-behavior: none;
             -webkit-tap-highlight-color: transparent;
         }
+
 
             /* PCやiPad (431px以上) のデザインを維持し、iPhone (430px以下) だけに適用するメディアクエリ */
 @media (max-width: 430px) {
@@ -94,7 +95,7 @@
       ★ 究極のラッパー構造 ★
       画面(dvh)全体を覆い、その中央にアプリコンテナを配置します。
     -->
-        <div class="w-full h-full flex items-center justify-center bg-[#0b1024]">
+        <div class="absolute inset-0 flex items-center justify-center bg-[#0b1024]">
         
         <!-- アプリコンテナ本体 -->
         <div id="app-container" class="relative w-full h-full max-h-[950px] max-w-[430px] bg-[#1f2b5e] flex flex-col md:rounded-3xl md:border md:border-white/10 shadow-2xl overflow-hidden">
