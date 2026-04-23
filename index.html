@@ -16,20 +16,13 @@
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 
     <style>
-        :root { --app-height: 100dvh; }
         /* 基本設定：スクロールバウンス(引っ張り)の防止 */
         html, body {
-    margin: 0; padding: 0;
-    height: 100%;
-    background-color: #0b1024;
-    overscroll-behavior: none;
-    -webkit-tap-highlight-color: transparent;
-    overflow: hidden;
-}
-/* このブロックをあとに書くことで html の height: 100% を上書き */
-html {
-    height: -webkit-fill-available;
-}
+            margin: 0; padding: 0;
+            background-color: #0b1024;
+            overscroll-behavior: none; /* iOS特有のゴムのようなスクロールを無効化 */
+            -webkit-tap-highlight-color: transparent;
+        }
 
         /* スクロールバー非表示 */
         * { scrollbar-width: none; }
@@ -57,7 +50,6 @@ html {
         .sortable-ghost { opacity: 0.3 !important; background: rgba(255, 255, 255, 0.05) !important; border: 2px dashed rgba(255, 255, 255, 0.6) !important; transform: scale(0.98); }
         .sortable-drag { opacity: 1 !important; background: rgba(255, 255, 255, 0.15) !important; backdrop-filter: blur(16px) !important; -webkit-backdrop-filter: blur(16px) !important; box-shadow: 0 15px 30px rgba(0,0,0,0.4) !important; border: 1px solid rgba(255, 255, 255, 0.4) !important; transform: scale(1.02); cursor: grabbing !important; }
     </style>
-
 </head>
 <body class="text-white select-none overflow-hidden">
 
@@ -71,8 +63,7 @@ html {
       ★ 究極のラッパー構造 ★
       画面(dvh)全体を覆い、その中央にアプリコンテナを配置します。
     -->
-    <div class="w-full h-full flex items-center justify-center bg-[#0b1024]">
-
+    <div class="w-full h-[100dvh] flex items-center justify-center bg-[#0b1024]">
         
         <!-- アプリコンテナ本体 -->
         <div id="app-container" class="relative w-full h-full max-h-[950px] max-w-[430px] bg-[#1f2b5e] flex flex-col md:rounded-3xl md:border md:border-white/10 shadow-2xl overflow-hidden">
