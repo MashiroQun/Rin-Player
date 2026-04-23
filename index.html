@@ -17,24 +17,16 @@
 
     <style>
         /* ==========================================
-           1. 究極の全画面固定ハック (マルチデバイス対応)
+           1. 究極の全画面固定 (JS不要の最新手法)
         ========================================== */
-        /* 余計な高さ指定や fixed をやめる */
-body {
-    background-color: #0b1024;
-    margin: 0; padding: 0;
-    overflow: hidden;
-    overscroll-behavior: none;
-    -webkit-tap-highlight-color: transparent;
-    user-select: none;
-}
-/* 以降の .safe-top 等はそのまま残してください */
-
-        /* iPhone/iPad(iOS Safari)の時だけ適用する特殊ルール */
-        @supports (-webkit-touch-callout: none) {
-            html, body {
-                height: -webkit-fill-available;
-            }
+        html, body {
+            height: 100%;
+            margin: 0; padding: 0;
+            overflow: hidden;
+            background-color: #0b1024;
+            overscroll-behavior: none;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: none;
         }
 
         /* ==========================================
@@ -53,33 +45,38 @@ body {
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         .hide-scrollbar::-webkit-scrollbar { display: none; }
 
+        /* セーフエリア対応 */
         .safe-top { padding-top: max(env(safe-area-inset-top), 12px); }
         .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom), 12px); }
+        .safe-bottom-nav { padding-bottom: max(env(safe-area-inset-bottom), 8px); }
 
+        /* レンジスライダー (シークバー) */
         input[type="range"] { -webkit-appearance: none; background: transparent; cursor: pointer; }
         input[type="range"]::-webkit-slider-runnable-track { background: rgba(255,255,255,0.2); border-radius: 4px; height: 4px; }
         input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; background: #fff; width: 14px; height: 14px; border-radius: 50%; margin-top: -5px; box-shadow: 0 2px 4px rgba(0,0,0,0.3); }
 
+        /* アニメーション */
         @keyframes float-large { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-20px); } }
         .animate-float-large { animation: float-large 3.5s ease-in-out infinite; }
         @keyframes glow-pulse { 0%, 100% { box-shadow: 0 0 20px 5px rgba(59, 130, 246, 0.3); } 50% { box-shadow: 0 0 60px 15px rgba(59, 130, 246, 0.6); } }
         .icon-glow { animation: glow-pulse 4s ease-in-out infinite; }
         .splash-fade-out { opacity: 0; pointer-events: none; transform: scale(1.05); transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
 
+        /* ドラッグ＆ドロップ用 */
         .sortable-ghost { opacity: 0.3 !important; background: rgba(255, 255, 255, 0.05) !important; border: 2px dashed rgba(255, 255, 255, 0.6) !important; transform: scale(0.98); }
         .sortable-drag { opacity: 1 !important; background: rgba(255, 255, 255, 0.15) !important; backdrop-filter: blur(16px) !important; -webkit-backdrop-filter: blur(16px) !important; box-shadow: 0 15px 30px rgba(0,0,0,0.4) !important; border: 1px solid rgba(255, 255, 255, 0.4) !important; transform: scale(1.02); cursor: grabbing !important; }
     </style>
 </head>
-<body class="flex items-center justify-center select-none">
+<body class="select-none">
 
-    <!-- 画面回転警告（CSSで制御するためJSの操作不要） -->
+    <!-- 画面回転警告 -->
     <div id="orientation-msg" class="fixed inset-0 z-[99999] bg-[#1f2b5e] flex-col items-center justify-center text-white p-6 text-center">
         <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="mb-4 opacity-70"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>
         <p class="font-bold tracking-widest text-lg">画面を縦向きにして<br>お使いください</p>
     </div>
 
-    <!-- アプリコンテナ（親=bodyに対して100%展開。最大幅を超えるとPCレイアウトに） -->
-    <div id="app-container" class="w-full max-h-[950px] max-w-[430px] bg-[#1f2b5e] flex flex-col relative md:rounded-3xl md:border md:border-white/10 shadow-2xl overflow-hidden">
+    <!-- アプリコンテナ ★魔法のクラス (fixed inset-0 m-auto) を適用 -->
+    <div id="app-container" class="fixed inset-0 m-auto w-full max-h-[950px] max-w-[430px] bg-[#1f2b5e] flex flex-col relative md:rounded-3xl md:border md:border-white/10 shadow-2xl overflow-hidden">
         
         <!-- スプラッシュスクリーン -->
         <div id="splash-screen" class="absolute inset-0 z-[9999] flex flex-col items-center justify-center bg-[#1f2b5e] cursor-pointer" onclick="startApp()">
@@ -139,7 +136,7 @@ body {
                     </div>
                 </div>
 
-                <div class="flex-1 overflow-y-auto px-4 bg-[#374892] pt-3 pb-6 hide-scrollbar" id="playlist-container"></div>   
+                <div class="flex-1 overflow-y-auto px-4 bg-[#374892] pt-3 pb-6 hide-scrollbar" id="playlist-container" style="touch-action: auto;"></div>   
             </section>
 
             <!-- LINKS VIEW -->
@@ -152,7 +149,7 @@ body {
                     </div>
                 </div>
 
-                <div class="relative z-10 flex-1 overflow-y-auto px-5 w-full flex flex-col items-center pt-12 pb-24 hide-scrollbar">
+                <div class="relative z-10 flex-1 overflow-y-auto px-5 w-full flex flex-col items-center pt-12 pb-24 hide-scrollbar" style="touch-action: auto;">
                     <div class="flex flex-col items-center mb-8">
                         <img src="/character.png" class="w-24 h-24 object-cover rounded-full border-[3px] border-white/20 shadow-xl mb-3">
                         <h2 class="text-2xl font-bold text-white tracking-widest drop-shadow-md">Rin☪︎</h2>
@@ -199,7 +196,7 @@ body {
                         <h1 class="text-[16px] font-bold tracking-widest text-white/90 z-20 uppercase">App Setting</h1>
                     </div>
                 </div>
-                <div class="flex-1 p-6 overflow-y-auto hide-scrollbar">
+                <div class="flex-1 p-6 overflow-y-auto hide-scrollbar" style="touch-action: auto;">
                     <div class="bg-black/20 p-4 rounded-2xl border border-white/5 mb-6 mt-4">
                         <div class="text-[10px] text-white/40 mb-2 font-bold uppercase tracking-tighter">API STATUS</div>
                         <div class="text-xs font-bold text-white/90 mb-1">リスト最終更新:</div>
@@ -225,8 +222,8 @@ body {
         </main>
 
         <!-- NAVIGATION -->
-        <nav class="flex-shrink-0 w-full bg-[#1f2b5e] border-t border-white/5 relative z-40 safe-bottom">
-            <div class="flex justify-around items-center pt-2 pb-2">
+        <nav class="flex-shrink-0 w-full bg-[#1f2b5e] border-t border-white/5 relative z-40 safe-bottom-nav">
+            <div class="flex justify-around items-center pt-2">
                 <button id="nav-player" onclick="switchTab('player')" class="nav-btn text-white flex flex-col items-center p-1 w-16"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg><span class="text-[8px] mt-1 font-bold">PLAYER</span></button>
                 <button id="nav-links" onclick="switchTab('links')" class="nav-btn text-white/30 flex flex-col items-center p-1 w-16"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg><span class="text-[8px] mt-1 font-bold">LINKS</span></button>
                 <button id="nav-edit" onclick="switchTab('edit')" class="nav-btn text-white/30 flex flex-col items-center p-1 w-16"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33a1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg><span class="text-[8px] mt-1 font-bold">SETTING</span></button>
@@ -240,7 +237,7 @@ body {
                 <h1 class="text-[14px] font-bold tracking-widest text-white/90 drop-shadow-md">プレイリストの編集</h1>
                 <div class="w-10"></div> 
             </div>
-            <div class="flex-1 overflow-y-auto p-4 pb-28 relative z-10 hide-scrollbar" id="edit-playlist-container"></div>
+            <div class="flex-1 overflow-y-auto p-4 pb-28 relative z-10 hide-scrollbar" id="edit-playlist-container" style="touch-action: auto;"></div>
             <div class="absolute bottom-0 left-0 w-full p-5 safe-bottom pt-4 bg-[#1f2b5e]/80 backdrop-blur-3xl border-t border-white/10 z-30 shadow-[0_-10px_30px_rgba(0,0,0,0.5)]">
                 <button onclick="saveEditedPlaylist()" class="w-full bg-[#0b1024] border-[2px] border-blue-300/60 hover:bg-[#121936] text-white font-bold py-3.5 rounded-2xl shadow-xl active:scale-95 transition-all tracking-widest text-[14px]">保存して適用</button>
             </div>
@@ -254,7 +251,7 @@ body {
                     <h2 class="text-[10px] font-bold text-white/90 tracking-[0.2em] uppercase">Credit Information</h2>
                     <button onclick="closeInfoModal()" class="w-8 h-8 rounded-full border-2 border-white/40 flex items-center justify-center text-white/80 active:scale-90 transition"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
                 </div>
-                <div id="info-modal-content" class="py-5 px-6 overflow-y-auto flex-1 text-[12px] text-white/80 leading-relaxed whitespace-pre-wrap break-words hide-scrollbar w-full"></div>
+                <div id="info-modal-content" class="py-5 px-6 overflow-y-auto flex-1 text-[12px] text-white/80 leading-relaxed whitespace-pre-wrap break-words hide-scrollbar w-full" style="touch-action: auto;"></div>
                 <div class="p-4 bg-black/30 border-t border-white/10 flex-shrink-0">
                     <a id="info-modal-link" href="#" target="_blank" class="flex items-center justify-center gap-2.5 w-full bg-white/10 border border-white/20 hover:bg-white/20 text-white font-bold py-3.5 rounded-2xl transition text-[11px] tracking-wider shadow-lg">YouTubeで見る</a>
                 </div>
@@ -273,51 +270,19 @@ body {
         </div>
     </div>
 
-    <!-- JavaScript -->
+    <!-- ここからJavaScript (ハック不要のクリーンな状態) -->
     <script>
-        // === 1. 究極のViewPortハック (iOSツールバー対策) ===
-        // === 絶対にズレない！高さ強制補正スクリプト ===
-function fixAppHeight() {
-    const app = document.getElementById('app-container');
-    // window.innerHeight が一番正確な「目に見える高さ」
-    app.style.height = window.innerHeight + 'px';
-}
-
-// 1. 画面サイズ変更時、回転時に実行
-window.addEventListener('resize', fixAppHeight);
-window.addEventListener('orientationchange', () => {
-    // 回転時はアニメーションが終わるまで時間差で何度か実行
-    setTimeout(fixAppHeight, 100);
-    setTimeout(fixAppHeight, 300);
-    setTimeout(fixAppHeight, 500);
-});
-
-// 2. Safariの「初回ロード時の計算遅れ」をねじ伏せる
-// ページを開いてから1秒間(100ミリ秒×10回)、連続で高さを監視・上書きし続ける
-let heightCheckCount = 0;
-const heightInterval = setInterval(() => {
-    fixAppHeight();
-    heightCheckCount++;
-    if (heightCheckCount >= 10) {
-        clearInterval(heightInterval); // 1秒後に監視終了
-    }
-}, 100);
-
-// 即時実行
-fixAppHeight();
-
-
-        // === 2. メインロジック ===
-        const MY_API_KEY = "AIzaSyBQ5nPI4F-ATGGHXi5CmjAUCmpf05KPpZU"; // 本番では保護してください
+        const MY_API_KEY = "AIzaSyBQ5nPI4F-ATGGHXi5CmjAUCmpf05KPpZU"; 
         const TARGET_HANDLE = '@r_____in__';
         const CACHE_KEY = 'video_cache_v12';
 
         let player, appStarted = false;
-        let allPlaylist =[], activePlaylist = [], playbackSequence =[], currentSeqIndex = 0;
+        let allPlaylist = [], activePlaylist = [], playbackSequence =[], currentSeqIndex = 0;
         let sortableInst = null, isShuffle = false, repeatMode = 0;
         let editingPlaylist =[];
         let tickInterval = null; 
 
+        // YouTube Iframe API
         const tag = document.createElement('script');
         tag.src = "https://www.youtube.com/iframe_api";
         document.head.appendChild(tag);
@@ -336,10 +301,7 @@ fixAppHeight();
 
             const splash = document.getElementById('splash-screen');
             splash.classList.add('splash-fade-out');
-            setTimeout(() => { 
-                splash.classList.add('hidden'); 
-                splash.classList.remove('flex'); 
-            }, 600);
+            setTimeout(() => { splash.classList.add('hidden'); splash.classList.remove('flex'); }, 600);
 
             if (player && typeof player.playVideo === 'function') {
                 try { player.mute(); player.loadVideoById('dQw4w9WgXcQ'); player.playVideo(); setTimeout(() => { player.pauseVideo(); player.unMute(); }, 200); } catch (e) {}
