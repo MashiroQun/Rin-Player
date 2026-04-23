@@ -75,7 +75,7 @@
         }
     </style>
 </head>
-<body class="bg-[#0b1024] h-dvh w-full overflow-hidden flex items-center justify-center overscroll-none select-none">
+<body class="bg-[#0b1024] fixed inset-0 overflow-hidden flex items-center justify-center overscroll-none select-none">
 
     <!-- 画面回転警告（スマホ・タブレット横向き時） -->
     <div id="orientation-msg" class="hidden fixed inset-0 z-[99999] bg-[#1f2b5e] flex-col items-center justify-center text-white p-6 text-center">
@@ -84,8 +84,7 @@
     </div>
 
     <!-- アプリコンテナ（PCでは中央配置、スマホでは全画面） -->
-    <div id="app-container" class="w-full h-dvh max-h-[950px] max-w-[430px] bg-[#1f2b5e] flex flex-col relative md:rounded-3xl md:border md:border-white/10 shadow-2xl overflow-hidden">
-        
+   <div id="app-container" class="w-full h-full max-h-[950px] max-w-[430px] bg-[#1f2b5e] flex flex-col relative md:rounded-3xl md:border md:border-white/10 shadow-2xl overflow-hidden">
         <!-- スプラッシュスクリーン -->
         <div id="splash-screen" class="absolute inset-0 z-[9999] flex flex-col items-center justify-center bg-[#1f2b5e] cursor-pointer" onclick="startApp()">
             <div class="relative w-36 h-36 mb-10 animate-float-large">
