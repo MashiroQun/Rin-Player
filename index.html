@@ -16,19 +16,21 @@
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 
     <style>
-        /* 基本設定：スクロールバウンス(引っ張り)の防止 */
+                /* 基本設定：スクロールバウンス(引っ張り)の防止 */
         html, body {
             margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100dvh; /* ここで画面全体の高さを100dvhに固定 */
+            box-sizing: border-box; /* パディングを含めて100dvh内に収める（はみ出し防止） */
             background-color: #0b1024;
             overscroll-behavior: none; /* iOS特有のゴムのようなスクロールを無効化 */
             -webkit-tap-highlight-color: transparent;
+
+            /* ★ここがポイント：上下のパディングを「大きい方」に合わせて均等にし、上寄りを防ぐ */
+            padding-top: max(env(safe-area-inset-top), env(safe-area-inset-bottom), 12px);
+            padding-bottom: max(env(safe-area-inset-top), env(safe-area-inset-bottom), 12px);
         }
-　　　　　　body {
-    /* 縦画面の上部余白を調整 */
-    padding-top: env(safe-area-inset-top);
-    /* 縦画面の下部余白を調整 */
-    padding-bottom: env(safe-area-inset-bottom);
-}
 
         /* スクロールバー非表示 */
         * { scrollbar-width: none; }
@@ -69,7 +71,7 @@
       ★ 究極のラッパー構造 ★
       画面(dvh)全体を覆い、その中央にアプリコンテナを配置します。
     -->
-    <div class="w-full h-[100dvh] flex items-center justify-center bg-[#0b1024]">
+        <div class="w-full h-full flex items-center justify-center bg-[#0b1024]">
         
         <!-- アプリコンテナ本体 -->
         <div id="app-container" class="relative w-full h-full max-h-[950px] max-w-[430px] bg-[#1f2b5e] flex flex-col md:rounded-3xl md:border md:border-white/10 shadow-2xl overflow-hidden">
