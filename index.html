@@ -40,7 +40,8 @@
 
         /* セーフエリアの自動保護 (iPhoneノッチ・ホームバー対応) */
         .safe-top { padding-top: max(env(safe-area-inset-top), 12px); }
-        .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom), 12px); }
+        /* PCなどセーフエリアがない端末用に少しだけ固定の余白を持たせる */
+.safe-bottom { padding-bottom: calc(env(safe-area-inset-bottom) + 8px); }
 
         /* Range Slider (シークバー) */
         input[type="range"] { -webkit-appearance: none; background: transparent; cursor: pointer; }
