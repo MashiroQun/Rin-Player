@@ -76,7 +76,7 @@
         }
     </style>
 </head>
-<body class="bg-[#0b1024] fixed inset-0 overflow-hidden flex items-center justify-center overscroll-none select-none">
+<body class="bg-[#0b1024] w-full overflow-hidden flex items-center justify-center overscroll-none select-none relative" style="height: calc(var(--vh, 1vh) * 100);">
 
     <!-- 画面回転警告（スマホ・タブレット横向き時） -->
     <div id="orientation-msg" class="hidden fixed inset-0 z-[99999] bg-[#1f2b5e] flex-col items-center justify-center text-white p-6 text-center">
@@ -86,7 +86,6 @@
 
     <!-- アプリコンテナ（PCでは中央配置、スマホでは全画面） -->
    <div id="app-container" class="w-full h-full max-h-[950px] max-w-[430px] bg-[#1f2b5e] flex flex-col relative md:rounded-3xl md:border md:border-white/10 shadow-2xl overflow-hidden">
-        <!-- スプラッシュスクリーン -->
         <div id="splash-screen" class="absolute inset-0 z-[9999] flex flex-col items-center justify-center bg-[#1f2b5e] cursor-pointer" onclick="startApp()">
             <div class="relative w-36 h-36 mb-10 animate-float-large">
                 <img src="/character.png" class="w-full h-full object-cover rounded-full z-10 border-[3px] border-white/10 shadow-2xl">
@@ -693,6 +692,33 @@
                 modal.classList.remove('flex');
             }, 300);
         }
+        // === 完璧な高さ(Viewport)制御のハック ===
+function setFillHeight() {
+    // 現在の純粋な画面の高さ(ツールバーを除いた部分)を計算
+    const vh = window.innerHeight * 0.01;
+    document.documentElement.style.setProperty('--vh', `${vh}px`);
+}
+
+// 1. まず初期化時に実行
+setFillHeight();
+
+// 2. 画面サイズが変わった時（ツールバーが引っ込んだ時など）に実行
+window.addEventListener('resize', () => {
+    setFillHeight();
+    // iOS Safariは動きが遅いので、100ミリ秒後にもう一度計算させる
+    setTimeout(setFillHeight, 100); 
+});
+
+// 3. 画面が回転した時に実行
+window.addEventListener('orientationchange', () => {
+    setFillHeight();
+    setTimeout(setFillHeight, 300); // 回転完了を待ってから計算
+});
+
+// 4. 初回ロード直後のSafariのバグ対策（時間差で何度か強制再計算する）
+setTimeout(setFillHeight, 100);
+setTimeout(setFillHeight, 500);
+setTimeout(setFillHeight, 1000); // 念のための1秒後
     </script>
 </body>
 </html>
