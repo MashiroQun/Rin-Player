@@ -19,16 +19,16 @@
         /* ==========================================
            1. 究極の全画面固定ハック (マルチデバイス対応)
         ========================================== */
-        html, body {
-            width: 100%;
-            height: 100dvh; /* 基本はモダンブラウザ・Android・PC用 */
-            margin: 0; padding: 0;
-            overflow: hidden; /* スクロールを殺す */
-            position: fixed; inset: 0;
-            background-color: #0b1024;
-            -webkit-tap-highlight-color: transparent;
-            overscroll-behavior: none;
-        }
+        /* 余計な高さ指定や fixed をやめる */
+body {
+    background-color: #0b1024;
+    margin: 0; padding: 0;
+    overflow: hidden;
+    overscroll-behavior: none;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+}
+/* 以降の .safe-top 等はそのまま残してください */
 
         /* iPhone/iPad(iOS Safari)の時だけ適用する特殊ルール */
         @supports (-webkit-touch-callout: none) {
@@ -79,7 +79,7 @@
     </div>
 
     <!-- アプリコンテナ（親=bodyに対して100%展開。最大幅を超えるとPCレイアウトに） -->
-    <div id="app-container" class="w-full h-full max-h-[950px] max-w-[430px] bg-[#1f2b5e] flex flex-col relative md:rounded-3xl md:border md:border-white/10 shadow-2xl overflow-hidden">
+    <div id="app-container" class="w-full max-h-[950px] max-w-[430px] bg-[#1f2b5e] flex flex-col relative md:rounded-3xl md:border md:border-white/10 shadow-2xl overflow-hidden">
         
         <!-- スプラッシュスクリーン -->
         <div id="splash-screen" class="absolute inset-0 z-[9999] flex flex-col items-center justify-center bg-[#1f2b5e] cursor-pointer" onclick="startApp()">
@@ -276,23 +276,35 @@
     <!-- JavaScript -->
     <script>
         // === 1. 究極のViewPortハック (iOSツールバー対策) ===
-        function adjustViewport() {
-            if (window.visualViewport) {
-                document.body.style.height = window.visualViewport.height + 'px';
-            } else {
-                document.body.style.height = window.innerHeight + 'px';
-            }
-        }
-        window.addEventListener('resize', adjustViewport);
-        window.addEventListener('orientationchange', () => {
-            setTimeout(adjustViewport, 50);
-            setTimeout(adjustViewport, 200);
-            setTimeout(adjustViewport, 500);
-        });
-        if (window.visualViewport) {
-            window.visualViewport.addEventListener('resize', adjustViewport);
-        }
-        adjustViewport(); // 初期化時に実行
+        // === 絶対にズレない！高さ強制補正スクリプト ===
+function fixAppHeight() {
+    const app = document.getElementById('app-container');
+    // window.innerHeight が一番正確な「目に見える高さ」
+    app.style.height = window.innerHeight + 'px';
+}
+
+// 1. 画面サイズ変更時、回転時に実行
+window.addEventListener('resize', fixAppHeight);
+window.addEventListener('orientationchange', () => {
+    // 回転時はアニメーションが終わるまで時間差で何度か実行
+    setTimeout(fixAppHeight, 100);
+    setTimeout(fixAppHeight, 300);
+    setTimeout(fixAppHeight, 500);
+});
+
+// 2. Safariの「初回ロード時の計算遅れ」をねじ伏せる
+// ページを開いてから1秒間(100ミリ秒×10回)、連続で高さを監視・上書きし続ける
+let heightCheckCount = 0;
+const heightInterval = setInterval(() => {
+    fixAppHeight();
+    heightCheckCount++;
+    if (heightCheckCount >= 10) {
+        clearInterval(heightInterval); // 1秒後に監視終了
+    }
+}, 100);
+
+// 即時実行
+fixAppHeight();
 
 
         // === 2. メインロジック ===
