@@ -16,45 +16,20 @@
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 
     <style>
-                /* 基本設定：スクロールバウンス(引っ張り)の防止 */
+                       /* 基本設定：スクロールバウンス(引っ張り)の防止 */
         html, body {
             margin: 0;
             padding: 0;
             width: 100%;
             
-            /* ▼ dvhをやめて、絶対的な 100% と fixed を組み合わせる ▼ */
-            height: 100%;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            /* ▲ これでiOSの計算を無視して画面の四隅に強制ピン留めされます ▲ */
-
+            /* ★ dvh や fixed、calc 等をすべてやめて、純粋な 100vh にします ★ */
+            height: 100vh; 
+            
             box-sizing: border-box;
             background-color: #0b1024;
             overscroll-behavior: none;
             -webkit-tap-highlight-color: transparent;
         }
-
-
-            /* PCやiPad (431px以上) のデザインを維持し、iPhone (430px以下) だけに適用するメディアクエリ */
-@media (max-width: 430px) {
-    /* iPhone(iOS Safari & PWA)限定：プレイヤー画面の下の余白をマイナスマージンで相殺する設定 */
-    @supports (-webkit-touch-callout: none) {
-        /* ① アプリコンテナ自体を、セーフエリア分だけ下方向に強制的に引っ張り落とす */
-        #app-container {
-            margin-bottom: calc(-1 * env(safe-area-inset-bottom));
-        }
-        
-        /* ② コンテナを下に引っ張った分、ナビバーの下パディングを「元の余白＋引っ張った分」に増やして、
-              アイコンが正しい位置（image_0.png のような配置）に保たれるように押し返す */
-        .safe-bottom {
-            padding-bottom: calc(env(safe-area-inset-bottom) + 12px) !important;
-        }
-    }
-}
-
             
         /* スクロールバー非表示 */
         * { scrollbar-width: none; }
