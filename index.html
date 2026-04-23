@@ -10,26 +10,44 @@
     <link rel="apple-touch-icon" href="/character.png">
     <link rel="manifest" href="/manifest.webmanifest">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-status-bar-style">
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 
     <style>
-                       /* 基本設定：スクロールバウンス(引っ張り)の防止 */
-        html, body {
+                /* 報告書準拠：ルート要素の100vh固定とラッパーへの権限委譲 */
+        html {
+            background-color: #0b1024;
+            height: 100vh; /* dvh遅延バグを回避し、常に物理的な高さを確保 */
+            width: 100vw;
+            overflow: hidden;
+            overscroll-behavior: none;
+        }
+
+        body {
+            height: 100vh;
             margin: 0;
             padding: 0;
-            width: 100%;
-            
-            /* ★ dvh や fixed、calc 等をすべてやめて、純粋な 100vh にします ★ */
-            height: 100vh; 
-            
-            box-sizing: border-box;
-            background-color: #0b1024;
-            overscroll-behavior: none;
+            overflow: hidden; /* bodyでのスクロールを完全に禁止 */
+            background-color: transparent;
             -webkit-tap-highlight-color: transparent;
         }
+
+        /* 新設：アプリケーション全体を包含するラッパー */
+        .app-wrapper {
+            height: 100vh;
+            width: 100%;
+            overflow-y: auto; /* 内部でのスクロールを許可 */
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior: contain; /* バウンスをコンテナ内に封じ込める */
+            
+            /* 中央配置のための既存のTailwindクラスと組み合わせる設定 */
+            display: flex;
+            align-items: center;
+            justify-center: center;
+        }
+
             
         /* スクロールバー非表示 */
         * { scrollbar-width: none; }
@@ -59,6 +77,8 @@
     </style>
 </head>
 <body class="text-white select-none overflow-hidden">
+    <div class="app-wrapper bg-[#0b1024]">
+        <div id="app-container" class="relative w-full h-full max-h-[950px] max-w-[430px] bg-[#1f2b5e] flex flex-col md:rounded-3xl md:border md:border-white/10 shadow-2xl overflow-hidden m-auto">
 
     <!-- 画面回転警告 -->
     <div id="orientation-msg" class="hidden fixed inset-0 z-[99999] bg-[#1f2b5e] flex-col items-center justify-center p-6 text-center">
