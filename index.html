@@ -14,20 +14,7 @@
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
-<script>
-(function(){
-    function setH(){
-        var h = (window.visualViewport ? window.visualViewport.height : window.innerHeight);
-        document.documentElement.style.setProperty('--app-height', h + 'px');
-    }
-    // リサイズ・回転時
-    if(window.visualViewport){ window.visualViewport.addEventListener('resize', setH); }
-    window.addEventListener('resize', setH);
-    // 初回：rAF + 遅延2段階でタイミングをカバー
-    setH();
-    requestAnimationFrame(function(){ setH(); setTimeout(setH, 150); });
-})();
-</script>
+
     <style>
         :root { --app-height: 100dvh; }
         /* 基本設定：スクロールバウンス(引っ張り)の防止 */
