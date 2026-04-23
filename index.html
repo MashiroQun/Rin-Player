@@ -20,18 +20,16 @@
         /* 基本設定：スクロールバウンス(引っ張り)の防止 */
         html, body {
     margin: 0; padding: 0;
+    height: 100%;
     background-color: #0b1024;
     overscroll-behavior: none;
     -webkit-tap-highlight-color: transparent;
-    height: 100%;
     overflow: hidden;
 }
-/* iOS Safari専用fix */
-html { height: -webkit-fill-available; }
-@supports (-webkit-touch-callout: none) {
-    body { height: -webkit-fill-available; }
+/* このブロックをあとに書くことで html の height: 100% を上書き */
+html {
+    height: -webkit-fill-available;
 }
-
 
         /* スクロールバー非表示 */
         * { scrollbar-width: none; }
