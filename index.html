@@ -21,11 +21,19 @@
             margin: 0;
             padding: 0;
             width: 100%;
-            height: 100dvh; /* ここで画面全体の高さを100dvhに固定 */
+           /* height: 100dvh; /* ここで画面全体の高さを100dvhに固定 */
             box-sizing: border-box; /* パディングを含めて100dvh内に収める（はみ出し防止） */
             background-color: #0b1024;
             overscroll-behavior: none; /* iOS特有のゴムのようなスクロールを無効化 */
             -webkit-tap-highlight-color: transparent;
+            /* ★ここから追加：画面の四隅に強制固定して高さ計算バグを回避★ */
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            /* ★追加ここまで★ */
+
         
         }
 
