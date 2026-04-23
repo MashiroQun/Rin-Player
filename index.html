@@ -20,29 +20,43 @@
     <style>
         /* 基本設定：スクロールバウンス(引っ張り)の防止 */
         /* 基本設定 */
+/* 基本設定：iOS PWA完全対応 */
 html, body {
-    margin: 0; 
+    margin: 0;
     padding: 0;
     background-color: #0b1024;
     overscroll-behavior: none;
     -webkit-tap-highlight-color: transparent;
     
-    /* iOS PWA対策（これが重要） */
+    /* iOS対策の核心 */
     height: 100dvh;
     min-height: 100dvh;
     min-height: -webkit-fill-available;
     max-height: 100dvh;
 }
 
+/* アプリ全体のコンテナを安全領域に合わせる */
+#app-container {
+    height: var(--app-height, 100dvh) !important;
+}
+/* navのsafe-bottomを強制 */
+nav {
+    padding-bottom: max(env(safe-area-inset-bottom), 20px) !important;
+    box-sizing: border-box;
+}
+
+/* 既存のsafeクラスも強化 */
+.safe-top { padding-top: max(env(safe-area-inset-top), 12px) !important; }
+.safe-bottom { padding-bottom: max(env(safe-area-inset-bottom), 12px) !important; }
         /* スクロールバー非表示 */
         * { scrollbar-width: none; }
         *::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         .hide-scrollbar::-webkit-scrollbar { display: none; }
 
-        /* セーフエリア対応 */
+        /* セーフエリア対応 
         .safe-top { padding-top: max(env(safe-area-inset-top), 12px); }
-        .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom), 12px); }
+        .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom), 12px); }*/
 
         /* レンジスライダー */
         input[type="range"] { -webkit-appearance: none; background: transparent; cursor: pointer; }
@@ -60,18 +74,7 @@ html, body {
         .sortable-ghost { opacity: 0.3 !important; background: rgba(255, 255, 255, 0.05) !important; border: 2px dashed rgba(255, 255, 255, 0.6) !important; transform: scale(0.98); }
         .sortable-drag { opacity: 1 !important; background: rgba(255, 255, 255, 0.15) !important; backdrop-filter: blur(16px) !important; -webkit-backdrop-filter: blur(16px) !important; box-shadow: 0 15px 30px rgba(0,0,0,0.4) !important; border: 1px solid rgba(255, 255, 255, 0.4) !important; transform: scale(1.02); cursor: grabbing !important; }
         /* iOS PWA フルスクリーン強化 */
-#app-container {
-    height: 100% !important;
-    max-height: 100dvh !important;
-}
 
-.safe-bottom {
-    padding-bottom: max(env(safe-area-inset-bottom), 12px) !important;
-}
-
-nav {
-    padding-bottom: max(env(safe-area-inset-bottom), 12px) !important;
-}
     </style>
 </head>
 <body class="text-white select-none overflow-hidden">
@@ -86,8 +89,8 @@ nav {
       ★ 究極のラッパー構造 ★
       画面(dvh)全体を覆い、その中央にアプリコンテナを配置します。
     -->
-    <div class="w-full h-dvh min-h-dvh min-h-[100dvh] h-screen flex items-center justify-center bg-[#0b1024]">
-        
+    <!-- 変更後 -->
+<div id="app-container" class="relative w-full h-full max-h-[950px] max-w-[430px] bg-[#1f2b5e] flex flex-col md:rounded-3xl md:border md:border-white/10 shadow-2xl overflow-hidden">
         <!-- アプリコンテナ本体 -->
         <div id="app-container" class="relative w-full h-full min-h-0 max-h-[950px] max-w-[430px] bg-[#1f2b5e] flex flex-col md:rounded-3xl md:border md:border-white/10 shadow-2xl overflow-hidden safe-top safe-bottom">
             
@@ -323,6 +326,16 @@ nav {
             if (appStarted) return; 
             appStarted = true;
             checkOrientation();
+
+            // iOS PWA 高さ調整
+    const setFullHeight = () => {
+        document.documentElement.style.setProperty('--app-height', `${window.innerHeight}px`);
+    };
+    setFullHeight();
+    window.addEventListener('resize', setFullHeight);
+    window.addEventListener('orientationchange', () => setTimeout(setFullHeight, 200));
+
+    checkOrientation();
 
             const splash = document.getElementById('splash-screen');
             splash.classList.add('splash-fade-out');
