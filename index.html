@@ -16,76 +16,72 @@
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 
     <style>
-        /* PCブラウザ向けの中央寄せ・背景設定 */
-        body {
+        /* ==========================================
+           1. 究極の全画面固定ハック (マルチデバイス対応)
+        ========================================== */
+        html, body {
+            width: 100%;
+            height: 100dvh; /* 基本はモダンブラウザ・Android・PC用 */
+            margin: 0; padding: 0;
+            overflow: hidden; /* スクロールを殺す */
+            position: fixed; inset: 0;
             background-color: #0b1024;
             -webkit-tap-highlight-color: transparent;
+            overscroll-behavior: none;
         }
 
-        /* スマホ等で画面を横に向けたときの警告表示 */
+        /* iPhone/iPad(iOS Safari)の時だけ適用する特殊ルール */
+        @supports (-webkit-touch-callout: none) {
+            html, body {
+                height: -webkit-fill-available;
+            }
+        }
+
+        /* ==========================================
+           2. 画面回転警告 (スマホ・タブレット横向き時)
+        ========================================== */
+        #orientation-msg { display: none; }
         @media screen and (max-width: 850px) and (orientation: landscape) {
             #orientation-msg { display: flex !important; }
         }
 
-        /* スクロールバーの非表示・カスタマイズ */
-        * { scrollbar-width: none; } /* Firefox */
-        *::-webkit-scrollbar { display: none; } /* Chrome/Safari */
-        .hide-scrollbar {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-        }
-        .hide-scrollbar::-webkit-scrollbar {
-            display: none;
-        }
+        /* ==========================================
+           3. UI・スクロールバー・セーフエリア
+        ========================================== */
+        * { scrollbar-width: none; }
+        *::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
 
-        /* セーフエリアの自動保護 (iPhoneノッチ・ホームバー対応) */
         .safe-top { padding-top: max(env(safe-area-inset-top), 12px); }
-        /* PCなどセーフエリアがない端末用に少しだけ固定の余白を持たせる */
-.safe-bottom { padding-bottom: calc(env(safe-area-inset-bottom) + 8px); }
+        .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom), 12px); }
 
-        /* Range Slider (シークバー) */
         input[type="range"] { -webkit-appearance: none; background: transparent; cursor: pointer; }
         input[type="range"]::-webkit-slider-runnable-track { background: rgba(255,255,255,0.2); border-radius: 4px; height: 4px; }
         input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; background: #fff; width: 14px; height: 14px; border-radius: 50%; margin-top: -5px; box-shadow: 0 2px 4px rgba(0,0,0,0.3); }
 
-        /* アニメーション */
         @keyframes float-large { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-20px); } }
         .animate-float-large { animation: float-large 3.5s ease-in-out infinite; }
-
         @keyframes glow-pulse { 0%, 100% { box-shadow: 0 0 20px 5px rgba(59, 130, 246, 0.3); } 50% { box-shadow: 0 0 60px 15px rgba(59, 130, 246, 0.6); } }
         .icon-glow { animation: glow-pulse 4s ease-in-out infinite; }
-
         .splash-fade-out { opacity: 0; pointer-events: none; transform: scale(1.05); transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
 
-        /* SortableJS ドラッグ用スタイル */
-        .sortable-ghost {
-            opacity: 0.3 !important;
-            background: rgba(255, 255, 255, 0.05) !important;
-            border: 2px dashed rgba(255, 255, 255, 0.6) !important;
-            transform: scale(0.98);
-        }
-        .sortable-drag {
-            opacity: 1 !important;
-            background: rgba(255, 255, 255, 0.15) !important;
-            backdrop-filter: blur(16px) !important;
-            -webkit-backdrop-filter: blur(16px) !important;
-            box-shadow: 0 15px 30px rgba(0,0,0,0.4) !important;
-            border: 1px solid rgba(255, 255, 255, 0.4) !important;
-            transform: scale(1.02);
-            cursor: grabbing !important;
-        }
+        .sortable-ghost { opacity: 0.3 !important; background: rgba(255, 255, 255, 0.05) !important; border: 2px dashed rgba(255, 255, 255, 0.6) !important; transform: scale(0.98); }
+        .sortable-drag { opacity: 1 !important; background: rgba(255, 255, 255, 0.15) !important; backdrop-filter: blur(16px) !important; -webkit-backdrop-filter: blur(16px) !important; box-shadow: 0 15px 30px rgba(0,0,0,0.4) !important; border: 1px solid rgba(255, 255, 255, 0.4) !important; transform: scale(1.02); cursor: grabbing !important; }
     </style>
 </head>
-<body class="bg-[#0b1024] w-full overflow-hidden flex items-center justify-center overscroll-none select-none relative" style="height: calc(var(--vh, 1vh) * 100);">
+<body class="flex items-center justify-center select-none">
 
-    <!-- 画面回転警告（スマホ・タブレット横向き時） -->
-    <div id="orientation-msg" class="hidden fixed inset-0 z-[99999] bg-[#1f2b5e] flex-col items-center justify-center text-white p-6 text-center">
+    <!-- 画面回転警告（CSSで制御するためJSの操作不要） -->
+    <div id="orientation-msg" class="fixed inset-0 z-[99999] bg-[#1f2b5e] flex-col items-center justify-center text-white p-6 text-center">
         <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="mb-4 opacity-70"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>
         <p class="font-bold tracking-widest text-lg">画面を縦向きにして<br>お使いください</p>
     </div>
 
-    <!-- アプリコンテナ（PCでは中央配置、スマホでは全画面） -->
-   <div id="app-container" class="w-full h-full max-h-[950px] max-w-[430px] bg-[#1f2b5e] flex flex-col relative md:rounded-3xl md:border md:border-white/10 shadow-2xl overflow-hidden">
+    <!-- アプリコンテナ（親=bodyに対して100%展開。最大幅を超えるとPCレイアウトに） -->
+    <div id="app-container" class="w-full h-full max-h-[950px] max-w-[430px] bg-[#1f2b5e] flex flex-col relative md:rounded-3xl md:border md:border-white/10 shadow-2xl overflow-hidden">
+        
+        <!-- スプラッシュスクリーン -->
         <div id="splash-screen" class="absolute inset-0 z-[9999] flex flex-col items-center justify-center bg-[#1f2b5e] cursor-pointer" onclick="startApp()">
             <div class="relative w-36 h-36 mb-10 animate-float-large">
                 <img src="/character.png" class="w-full h-full object-cover rounded-full z-10 border-[3px] border-white/10 shadow-2xl">
@@ -95,7 +91,7 @@
             <div class="absolute bottom-32 animate-pulse text-white/70 text-[10px] font-bold tracking-[0.2em]">- TAP TO START -</div>
         </div>
 
-        <!-- ビュー切り替えエリア (Flexboxで伸び縮みを管理) -->
+        <!-- ビュー切り替えエリア -->
         <main class="flex-1 w-full relative overflow-hidden flex flex-col min-h-0 bg-[#2b3978]">
             
             <!-- PLAYER VIEW -->
@@ -110,7 +106,7 @@
                         </div>
                         <div class="absolute right-5 z-40 opacity-70">
                             <button onclick="confirmLink('https://www.youtube.com/', 'YouTube トップページ')" class="block active:scale-90 transition-transform">
-                                <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" width="38" height="38"><title>YouTube</title><path fill="#ffffff" d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+                                <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" width="38" height="38"><path fill="#ffffff" d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
                             </button>
                         </div>
                     </div>
@@ -164,50 +160,32 @@
                     </div>
 
                     <div class="grid grid-cols-3 gap-x-3 gap-y-6 w-full max-w-[320px] pb-6">
-                        <!-- X (Twitter) -->
                         <button onclick="confirmLink('https://twitter.com/r_____in__', 'X (Twitter)')" class="flex flex-col items-center w-full active:scale-90 transition-transform">
-                            <div class="w-[72px] h-[72px] flex items-center justify-center bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 shadow-lg mb-2 relative overflow-hidden group"><div class="absolute inset-0 bg-white/0 group-active:bg-white/10 transition-colors"></div><svg width="30" height="30" viewBox="0 0 24 24" fill="currentColor" class="text-white drop-shadow-md"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></div>
-                            <span class="font-bold text-white/90 text-[10px] tracking-wider drop-shadow-md">X</span>
+                            <div class="w-[72px] h-[72px] flex items-center justify-center bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 shadow-lg mb-2 relative overflow-hidden group"><div class="absolute inset-0 bg-white/0 group-active:bg-white/10 transition-colors"></div><svg width="30" height="30" viewBox="0 0 24 24" fill="currentColor" class="text-white drop-shadow-md"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></div><span class="font-bold text-white/90 text-[10px] tracking-wider drop-shadow-md">X</span>
                         </button>
-                        <!-- YouTube -->
                         <button onclick="confirmLink('https://www.youtube.com/@r_____in__', 'YouTube')" class="flex flex-col items-center w-full active:scale-90 transition-transform">
-                            <div class="w-[72px] h-[72px] flex items-center justify-center bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 shadow-lg mb-2 relative overflow-hidden group"><div class="absolute inset-0 bg-white/0 group-active:bg-white/10 transition-colors"></div><svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor" class="text-white drop-shadow-md"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></div>
-                            <span class="font-bold text-white/90 text-[10px] tracking-wider drop-shadow-md">YouTube</span>
+                            <div class="w-[72px] h-[72px] flex items-center justify-center bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 shadow-lg mb-2 relative overflow-hidden group"><div class="absolute inset-0 bg-white/0 group-active:bg-white/10 transition-colors"></div><svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor" class="text-white drop-shadow-md"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></div><span class="font-bold text-white/90 text-[10px] tracking-wider drop-shadow-md">YouTube</span>
                         </button>
-                        <!-- ツイキャス -->
                         <button onclick="confirmLink('#', 'ツイキャス')" class="flex flex-col items-center w-full active:scale-90 transition-transform">
-                            <div class="w-[72px] h-[72px] flex items-center justify-center bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 shadow-lg mb-2 relative overflow-hidden group"><div class="absolute inset-0 bg-white/0 group-active:bg-white/10 transition-colors"></div><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="drop-shadow-md"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg></div>
-                            <span class="font-bold text-white/90 text-[9px] tracking-wider drop-shadow-md">ツイキャス</span>
+                            <div class="w-[72px] h-[72px] flex items-center justify-center bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 shadow-lg mb-2 relative overflow-hidden group"><div class="absolute inset-0 bg-white/0 group-active:bg-white/10 transition-colors"></div><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="drop-shadow-md"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg></div><span class="font-bold text-white/90 text-[9px] tracking-wider drop-shadow-md">ツイキャス</span>
                         </button>
-                        <!-- ニコニコ動画 -->
                         <button onclick="confirmLink('#', 'ニコニコ動画')" class="flex flex-col items-center w-full active:scale-90 transition-transform">
-                            <div class="w-[72px] h-[72px] flex items-center justify-center bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 shadow-lg mb-2 relative overflow-hidden group"><div class="absolute inset-0 bg-white/0 group-active:bg-white/10 transition-colors"></div><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="drop-shadow-md"><rect x="2" y="7" width="20" height="15" rx="2" ry="2"/><polyline points="17 2 12 7 7 2"/></svg></div>
-                            <span class="font-bold text-white/90 text-[9px] tracking-wider drop-shadow-md">ニコニコ動画</span>
+                            <div class="w-[72px] h-[72px] flex items-center justify-center bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 shadow-lg mb-2 relative overflow-hidden group"><div class="absolute inset-0 bg-white/0 group-active:bg-white/10 transition-colors"></div><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="drop-shadow-md"><rect x="2" y="7" width="20" height="15" rx="2" ry="2"/><polyline points="17 2 12 7 7 2"/></svg></div><span class="font-bold text-white/90 text-[9px] tracking-wider drop-shadow-md">ニコニコ動画</span>
                         </button>
-                        <!-- FANBOX -->
                         <button onclick="confirmLink('#', 'FANBOX')" class="flex flex-col items-center w-full active:scale-90 transition-transform">
-                            <div class="w-[72px] h-[72px] flex items-center justify-center bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 shadow-lg mb-2 relative overflow-hidden group"><div class="absolute inset-0 bg-white/0 group-active:bg-white/10 transition-colors"></div><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="drop-shadow-md"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg></div>
-                            <span class="font-bold text-white/90 text-[10px] tracking-wider drop-shadow-md">FANBOX</span>
+                            <div class="w-[72px] h-[72px] flex items-center justify-center bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 shadow-lg mb-2 relative overflow-hidden group"><div class="absolute inset-0 bg-white/0 group-active:bg-white/10 transition-colors"></div><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="drop-shadow-md"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg></div><span class="font-bold text-white/90 text-[10px] tracking-wider drop-shadow-md">FANBOX</span>
                         </button>
-                        <!-- BOOTH -->
                         <button onclick="confirmLink('#', 'BOOTH')" class="flex flex-col items-center w-full active:scale-90 transition-transform">
-                            <div class="w-[72px] h-[72px] flex items-center justify-center bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 shadow-lg mb-2 relative overflow-hidden group"><div class="absolute inset-0 bg-white/0 group-active:bg-white/10 transition-colors"></div><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="drop-shadow-md"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg></div>
-                            <span class="font-bold text-white/90 text-[10px] tracking-wider drop-shadow-md">BOOTH</span>
+                            <div class="w-[72px] h-[72px] flex items-center justify-center bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 shadow-lg mb-2 relative overflow-hidden group"><div class="absolute inset-0 bg-white/0 group-active:bg-white/10 transition-colors"></div><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="drop-shadow-md"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg></div><span class="font-bold text-white/90 text-[10px] tracking-wider drop-shadow-md">BOOTH</span>
                         </button>
-                        <!-- WEBサイト -->
                         <button onclick="confirmLink('#', 'WEBサイト')" class="flex flex-col items-center w-full active:scale-90 transition-transform">
-                            <div class="w-[72px] h-[72px] flex items-center justify-center bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 shadow-lg mb-2 relative overflow-hidden group"><div class="absolute inset-0 bg-white/0 group-active:bg-white/10 transition-colors"></div><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="drop-shadow-md"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg></div>
-                            <span class="font-bold text-white/90 text-[10px] tracking-wider drop-shadow-md">WEBサイト</span>
+                            <div class="w-[72px] h-[72px] flex items-center justify-center bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 shadow-lg mb-2 relative overflow-hidden group"><div class="absolute inset-0 bg-white/0 group-active:bg-white/10 transition-colors"></div><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="drop-shadow-md"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg></div><span class="font-bold text-white/90 text-[10px] tracking-wider drop-shadow-md">WEBサイト</span>
                         </button>
-                        <!-- マシュマロ -->
                         <button onclick="confirmLink('#', 'マシュマロ')" class="flex flex-col items-center w-full active:scale-90 transition-transform">
-                            <div class="w-[72px] h-[72px] flex items-center justify-center bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 shadow-lg mb-2 relative overflow-hidden group"><div class="absolute inset-0 bg-white/0 group-active:bg-white/10 transition-colors"></div><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="drop-shadow-md"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg></div>
-                            <span class="font-bold text-white/90 text-[10px] tracking-wider drop-shadow-md">マシュマロ</span>
+                            <div class="w-[72px] h-[72px] flex items-center justify-center bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 shadow-lg mb-2 relative overflow-hidden group"><div class="absolute inset-0 bg-white/0 group-active:bg-white/10 transition-colors"></div><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="drop-shadow-md"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg></div><span class="font-bold text-white/90 text-[10px] tracking-wider drop-shadow-md">マシュマロ</span>
                         </button>
-                        <!-- Amazon欲しいものリスト -->
                         <button onclick="confirmLink('#', 'Amazon欲しいものリスト')" class="flex flex-col items-center w-full active:scale-90 transition-transform">
-                            <div class="w-[72px] h-[72px] flex items-center justify-center bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 shadow-lg mb-2 relative overflow-hidden group"><div class="absolute inset-0 bg-white/0 group-active:bg-white/10 transition-colors"></div><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="drop-shadow-md"><polyline points="20 12 20 22 4 22 4 12"></polyline><rect x="2" y="7" width="20" height="5"></rect><line x1="12" y1="22" x2="12" y2="7"></line><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"></path><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"></path></svg></div>
-                            <span class="font-bold text-white/90 text-[9px] tracking-wider drop-shadow-md text-center leading-tight">Amazon<br>欲しいもの</span>
+                            <div class="w-[72px] h-[72px] flex items-center justify-center bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 shadow-lg mb-2 relative overflow-hidden group"><div class="absolute inset-0 bg-white/0 group-active:bg-white/10 transition-colors"></div><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="drop-shadow-md"><polyline points="20 12 20 22 4 22 4 12"></polyline><rect x="2" y="7" width="20" height="5"></rect><line x1="12" y1="22" x2="12" y2="7"></line><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"></path><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"></path></svg></div><span class="font-bold text-white/90 text-[9px] tracking-wider drop-shadow-md text-center leading-tight">Amazon<br>欲しいもの</span>
                         </button>
                     </div>
                 </div>
@@ -234,9 +212,7 @@
                         <p class="text-[11px] text-white/70 mb-3 font-bold">ご自分で用意したキーを登録してください。</p>
                         <div class="relative mb-4">
                             <input type="text" id="api-key-input" placeholder="AIzaSy..." class="w-full bg-black/40 text-white text-sm px-3 py-3 pr-10 rounded-xl border border-white/10 focus:outline-none focus:border-white/50 transition">
-                            <button onclick="toggleApiKeyVisibility()" class="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 active:text-white/80">
-                                <svg id="eye-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                            </button>
+                            <button onclick="toggleApiKeyVisibility()" class="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 active:text-white/80"><svg id="eye-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg></button>
                         </div>
                         <button onclick="saveApiKey(event)" class="w-full bg-[#0b1024] border-[2px] border-blue-300/60 hover:bg-[#121936] text-white font-bold py-3.5 rounded-2xl shadow-xl active:scale-95 transition-all tracking-widest text-[14px]">保存して適用</button>
                     </div>
@@ -295,36 +271,41 @@
                 </div>
             </div>
         </div>
-
     </div>
 
-    <!-- ここからJavaScript -->
+    <!-- JavaScript -->
     <script>
+        // === 1. 究極のViewPortハック (iOSツールバー対策) ===
+        function adjustViewport() {
+            if (window.visualViewport) {
+                document.body.style.height = window.visualViewport.height + 'px';
+            } else {
+                document.body.style.height = window.innerHeight + 'px';
+            }
+        }
+        window.addEventListener('resize', adjustViewport);
+        window.addEventListener('orientationchange', () => {
+            setTimeout(adjustViewport, 50);
+            setTimeout(adjustViewport, 200);
+            setTimeout(adjustViewport, 500);
+        });
+        if (window.visualViewport) {
+            window.visualViewport.addEventListener('resize', adjustViewport);
+        }
+        adjustViewport(); // 初期化時に実行
+
+
+        // === 2. メインロジック ===
         const MY_API_KEY = "AIzaSyBQ5nPI4F-ATGGHXi5CmjAUCmpf05KPpZU"; // 本番では保護してください
         const TARGET_HANDLE = '@r_____in__';
         const CACHE_KEY = 'video_cache_v12';
 
         let player, appStarted = false;
-        let allPlaylist = [], activePlaylist = [], playbackSequence =[], currentSeqIndex = 0;
+        let allPlaylist =[], activePlaylist = [], playbackSequence =[], currentSeqIndex = 0;
         let sortableInst = null, isShuffle = false, repeatMode = 0;
         let editingPlaylist =[];
         let tickInterval = null; 
 
-        // === 画面回転監視 ===
-        function checkOrientation() {
-            const msg = document.getElementById('orientation-msg');
-            if (window.innerWidth < window.innerHeight && window.matchMedia("(orientation: landscape)").matches) {
-                msg.classList.remove('hidden');
-                msg.classList.add('flex');
-            } else {
-                msg.classList.add('hidden');
-                msg.classList.remove('flex');
-            }
-        }
-        window.addEventListener('resize', checkOrientation);
-        window.addEventListener('orientationchange', checkOrientation);
-
-        // === YouTube Iframe API ===
         const tag = document.createElement('script');
         tag.src = "https://www.youtube.com/iframe_api";
         document.head.appendChild(tag);
@@ -337,11 +318,9 @@
             });
         }
 
-        // === アプリ起動 ===
         async function startApp() {
             if (appStarted) return; 
             appStarted = true;
-            checkOrientation();
 
             const splash = document.getElementById('splash-screen');
             splash.classList.add('splash-fade-out');
@@ -351,12 +330,7 @@
             }, 600);
 
             if (player && typeof player.playVideo === 'function') {
-                try { 
-                    player.mute(); 
-                    player.loadVideoById('dQw4w9WgXcQ'); 
-                    player.playVideo(); 
-                    setTimeout(() => { player.pauseVideo(); player.unMute(); }, 200); 
-                } catch (e) {}
+                try { player.mute(); player.loadVideoById('dQw4w9WgXcQ'); player.playVideo(); setTimeout(() => { player.pauseVideo(); player.unMute(); }, 200); } catch (e) {}
             }
 
             let apiKey = localStorage.getItem('yt_api_key') || MY_API_KEY;
@@ -369,7 +343,6 @@
             updateStatusUI();
         }
 
-        // === データ取得と管理 ===
         async function saveApiKey(e) {
             const key = document.getElementById('api-key-input').value.trim();
             if (!key) { alert('APIキーを入力してください。'); return; }
@@ -462,7 +435,6 @@
             }).join('');
         }
 
-        // === プレイヤー制御 ===
         function playTrackBySequence(seqIndex, autoPlay = true) {
             if (activePlaylist.length === 0) return;
             currentSeqIndex = seqIndex;
@@ -540,54 +512,31 @@
             updateActivePlaylist(currentTrackId);
         }
 
-        // === タブ・UI切り替え処理 ===
-        function switchTab(tab) {
-            ['player', 'links', 'edit'].forEach(id => {
+        function switchTab(tab) {['player', 'links', 'edit'].forEach(id => {
                 const view = document.getElementById('view-' + id);
-                view.classList.add('hidden');
-                view.classList.remove('flex');
-                
+                view.classList.add('hidden'); view.classList.remove('flex');
                 const nav = document.getElementById('nav-' + id);
-                nav.classList.remove('text-white'); 
-                nav.classList.add('text-white/30');
+                nav.classList.remove('text-white'); nav.classList.add('text-white/30');
             });
-            
             const activeView = document.getElementById('view-' + tab);
-            activeView.classList.remove('hidden');
-            activeView.classList.add('flex');
-            
-            const activeNav = document.getElementById('nav-' + tab);
-            activeNav.classList.remove('text-white/30');
-            activeNav.classList.add('text-white');
+            activeView.classList.remove('hidden'); activeView.classList.add('flex');
+            document.getElementById('nav-' + tab).classList.replace('text-white/30', 'text-white');
         }
 
-        // === モーダル関連 ===
         function openInfoModal() {
             if (activePlaylist.length === 0) return;
             const track = activePlaylist[playbackSequence[currentSeqIndex]];
-            const modal = document.getElementById('info-modal');
-            const box = document.getElementById('info-modal-box');
-            
+            const modal = document.getElementById('info-modal'), box = document.getElementById('info-modal-box');
             document.getElementById('info-modal-content').innerHTML = (track.description || "No description.").replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" class="text-blue-400 underline">$1</a>');
             document.getElementById('info-modal-link').href = "https://www.youtube.com/watch?v=" + track.id;
-            
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-            setTimeout(() => {
-                modal.classList.remove('opacity-0');
-                box.classList.remove('scale-95');
-            }, 10);
+            modal.classList.remove('hidden'); modal.classList.add('flex');
+            setTimeout(() => { modal.classList.remove('opacity-0'); box.classList.remove('scale-95'); }, 10);
         }
 
         function closeInfoModal() {
-            const modal = document.getElementById('info-modal');
-            const box = document.getElementById('info-modal-box');
-            modal.classList.add('opacity-0');
-            box.classList.add('scale-95');
-            setTimeout(() => {
-                modal.classList.add('hidden');
-                modal.classList.remove('flex');
-            }, 300);
+            const modal = document.getElementById('info-modal'), box = document.getElementById('info-modal-box');
+            modal.classList.add('opacity-0'); box.classList.add('scale-95');
+            setTimeout(() => { modal.classList.add('hidden'); modal.classList.remove('flex'); }, 300);
         }
 
         function toggleApiKeyVisibility() {
@@ -601,18 +550,14 @@
             editingPlaylist = JSON.parse(JSON.stringify(allPlaylist));
             renderEditPlaylist();
             const v = document.getElementById('view-edit-list');
-            v.classList.remove('hidden');
-            v.classList.add('flex');
+            v.classList.remove('hidden'); v.classList.add('flex');
             setTimeout(() => v.classList.remove('translate-y-full'), 10);
         }
 
         function closeEditPlaylist() {
             const v = document.getElementById('view-edit-list');
             v.classList.add('translate-y-full');
-            setTimeout(() => {
-                v.classList.add('hidden');
-                v.classList.remove('flex');
-            }, 300);
+            setTimeout(() => { v.classList.add('hidden'); v.classList.remove('flex'); }, 300);
         }
 
         function renderEditPlaylist() {
@@ -627,98 +572,29 @@
                 <button onclick="toggleVisibility('${item.id}')" class="p-2.5 bg-white/5 border border-white/10 rounded-full text-white/80 active:bg-white/20 transition-all">${item.isHidden ? hSlash : hLine}</button></div>`).join('');
                 
             if (sortableInst) sortableInst.destroy();
-            sortableInst = new Sortable(container, { 
-                handle: '.drag-handle', animation: 250, 
-                ghostClass: 'sortable-ghost', dragClass: 'sortable-drag', 
-                fallbackTolerance: 5, delay: 150, delayOnTouchOnly: true,
-                onEnd: (evt) => { 
-                    const item = editingPlaylist.splice(evt.oldIndex, 1)[0]; 
-                    editingPlaylist.splice(evt.newIndex, 0, item); 
-                } 
-            });
+            sortableInst = new Sortable(container, { handle: '.drag-handle', animation: 250, ghostClass: 'sortable-ghost', dragClass: 'sortable-drag', fallbackTolerance: 5, delay: 150, delayOnTouchOnly: true, onEnd: (evt) => { const item = editingPlaylist.splice(evt.oldIndex, 1)[0]; editingPlaylist.splice(evt.newIndex, 0, item); } });
         }
 
-        function toggleVisibility(id) {
-            const item = editingPlaylist.find(p => p.id === id);
-            if (item) { item.isHidden = !item.isHidden; renderEditPlaylist(); }
-        }
-
-        function saveEditedPlaylist() {
-            allPlaylist = editingPlaylist;
-            localStorage.setItem(CACHE_KEY, JSON.stringify(allPlaylist));
-            const currentTrackId = activePlaylist[playbackSequence[currentSeqIndex]]?.id;
-            updateActivePlaylist(currentTrackId);
-            closeEditPlaylist();
-        }
-
+        function toggleVisibility(id) { const item = editingPlaylist.find(p => p.id === id); if (item) { item.isHidden = !item.isHidden; renderEditPlaylist(); } }
+        function saveEditedPlaylist() { allPlaylist = editingPlaylist; localStorage.setItem(CACHE_KEY, JSON.stringify(allPlaylist)); const currentTrackId = activePlaylist[playbackSequence[currentSeqIndex]]?.id; updateActivePlaylist(currentTrackId); closeEditPlaylist(); }
         function parseISO8601(d) { const m = d.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/); return formatSeconds(parseInt(m[1] || 0) * 3600 + parseInt(m[2] || 0) * 60 + parseInt(m[3] || 0)); }
         function formatSeconds(s) { return Math.floor(s / 60) + ":" + Math.floor(s % 60).toString().padStart(2, '0'); }
         function updateStatusUI() { document.getElementById('status-last-update').innerText = localStorage.getItem('last_fetch_datetime') || '未取得'; }
 
-        // === リンク確認モーダル ===
         let pendingUrl = '';
-
         function confirmLink(url, siteName) {
             pendingUrl = url;
             document.getElementById('link-modal-text').innerHTML = `<span class="font-bold text-white text-base">${siteName}</span><br>を開きますか？`;
-            
-            document.getElementById('link-modal-btn').onclick = () => {
-                window.open(pendingUrl, '_blank');
-                closeLinkModal();
-            };
-            
-            const modal = document.getElementById('link-modal');
-            const box = document.getElementById('link-modal-box');
-            
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-            setTimeout(() => {
-                modal.classList.remove('opacity-0');
-                box.classList.remove('scale-95');
-                box.classList.add('scale-100');
-            }, 10);
+            document.getElementById('link-modal-btn').onclick = () => { window.open(pendingUrl, '_blank'); closeLinkModal(); };
+            const modal = document.getElementById('link-modal'), box = document.getElementById('link-modal-box');
+            modal.classList.remove('hidden'); modal.classList.add('flex');
+            setTimeout(() => { modal.classList.remove('opacity-0'); box.classList.remove('scale-95'); box.classList.add('scale-100'); }, 10);
         }
-
         function closeLinkModal() {
-            const modal = document.getElementById('link-modal');
-            const box = document.getElementById('link-modal-box');
-            
-            modal.classList.add('opacity-0');
-            box.classList.remove('scale-100');
-            box.classList.add('scale-95');
-            
-            setTimeout(() => {
-                modal.classList.add('hidden');
-                modal.classList.remove('flex');
-            }, 300);
+            const modal = document.getElementById('link-modal'), box = document.getElementById('link-modal-box');
+            modal.classList.add('opacity-0'); box.classList.remove('scale-100'); box.classList.add('scale-95');
+            setTimeout(() => { modal.classList.add('hidden'); modal.classList.remove('flex'); }, 300);
         }
-        // === 完璧な高さ(Viewport)制御のハック ===
-function setFillHeight() {
-    // 現在の純粋な画面の高さ(ツールバーを除いた部分)を計算
-    const vh = window.innerHeight * 0.01;
-    document.documentElement.style.setProperty('--vh', `${vh}px`);
-}
-
-// 1. まず初期化時に実行
-setFillHeight();
-
-// 2. 画面サイズが変わった時（ツールバーが引っ込んだ時など）に実行
-window.addEventListener('resize', () => {
-    setFillHeight();
-    // iOS Safariは動きが遅いので、100ミリ秒後にもう一度計算させる
-    setTimeout(setFillHeight, 100); 
-});
-
-// 3. 画面が回転した時に実行
-window.addEventListener('orientationchange', () => {
-    setFillHeight();
-    setTimeout(setFillHeight, 300); // 回転完了を待ってから計算
-});
-
-// 4. 初回ロード直後のSafariのバグ対策（時間差で何度か強制再計算する）
-setTimeout(setFillHeight, 100);
-setTimeout(setFillHeight, 500);
-setTimeout(setFillHeight, 1000); // 念のための1秒後
     </script>
 </body>
 </html>
