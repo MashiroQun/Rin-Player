@@ -37,7 +37,24 @@
             -webkit-tap-highlight-color: transparent;
         }
 
+            /* PCやiPad (431px以上) のデザインを維持し、iPhone (430px以下) だけに適用するメディアクエリ */
+@media (max-width: 430px) {
+    /* iPhone(iOS Safari & PWA)限定：プレイヤー画面の下の余白をマイナスマージンで相殺する設定 */
+    @supports (-webkit-touch-callout: none) {
+        /* ① アプリコンテナ自体を、セーフエリア分だけ下方向に強制的に引っ張り落とす */
+        #app-container {
+            margin-bottom: calc(-1 * env(safe-area-inset-bottom));
+        }
+        
+        /* ② コンテナを下に引っ張った分、ナビバーの下パディングを「元の余白＋引っ張った分」に増やして、
+              アイコンが正しい位置（image_0.png のような配置）に保たれるように押し返す */
+        .safe-bottom {
+            padding-bottom: calc(env(safe-area-inset-bottom) + 12px) !important;
+        }
+    }
+}
 
+            
         /* スクロールバー非表示 */
         * { scrollbar-width: none; }
         *::-webkit-scrollbar { display: none; }
