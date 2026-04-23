@@ -13,10 +13,11 @@ export default defineConfig({
         short_name: 'Rin Music',
         description: 'Rin☪︎ Official Music Player PWA',
         start_url: '/',
-        display: 'standalone',
-        orientation: 'portrait', 
-        background_color: '#2C3D85',
-        theme_color: '#2C3D85',
+        display: 'fullscreen',
+        display_override: ['fullscreen', 'standalone', 'minimal-ui'],
+        orientation: 'portrait',
+        background_color: '#0b1024',
+        theme_color: '#1f2b5e',
         lang: 'ja',
         icons: [
           {
