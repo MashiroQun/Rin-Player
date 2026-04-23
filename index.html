@@ -17,13 +17,18 @@
 
     <style>
         /* 基本設定：スクロールバウンス(引っ張り)の防止 */
-        html, body {
-            margin: 0; padding: 0;
-            background-color: #0b1024;
-            overscroll-behavior: none; /* iOS特有のゴムのようなスクロールを無効化 */
-            -webkit-tap-highlight-color: transparent;
-        }
-
+        /* 基本設定：スクロールバウンス(引っ張り)の防止 */
+html, body {
+    margin: 0; padding: 0;
+    background-color: #0b1024;
+    overscroll-behavior: none; /* iOS特有のゴムのようなスクロールを無効化 */
+    -webkit-tap-highlight-color: transparent;
+    
+    /* ★★★ ここを追加・強化 ★★★ */
+    height: 100dvh;
+    min-height: 100dvh;
+    max-height: 100dvh;
+}
         /* スクロールバー非表示 */
         * { scrollbar-width: none; }
         *::-webkit-scrollbar { display: none; }
@@ -49,6 +54,19 @@
         /* SortableJS */
         .sortable-ghost { opacity: 0.3 !important; background: rgba(255, 255, 255, 0.05) !important; border: 2px dashed rgba(255, 255, 255, 0.6) !important; transform: scale(0.98); }
         .sortable-drag { opacity: 1 !important; background: rgba(255, 255, 255, 0.15) !important; backdrop-filter: blur(16px) !important; -webkit-backdrop-filter: blur(16px) !important; box-shadow: 0 15px 30px rgba(0,0,0,0.4) !important; border: 1px solid rgba(255, 255, 255, 0.4) !important; transform: scale(1.02); cursor: grabbing !important; }
+        /* iPhone PWA用 高さ補正 */
+#app-container {
+    height: 100% !important;
+    max-height: 100dvh !important;
+}
+        .h-dvh-custom {
+    height: calc(var(--vh, 1vh) * 100) !important;
+}
+
+/* safe-areaをより強力に */
+.safe-bottom {
+    padding-bottom: max(env(safe-area-inset-bottom), 12px) !important;
+}
     </style>
 </head>
 <body class="text-white select-none overflow-hidden">
@@ -63,10 +81,9 @@
       ★ 究極のラッパー構造 ★
       画面(dvh)全体を覆い、その中央にアプリコンテナを配置します。
     -->
-    <div class="w-full h-[100dvh] flex items-center justify-center bg-[#0b1024]">
-        
+    <<div class="w-full h-dvh min-h-dvh h-screen flex items-center justify-center bg-[#0b1024]">
         <!-- アプリコンテナ本体 -->
-        <div id="app-container" class="relative w-full h-full max-h-[950px] max-w-[430px] bg-[#1f2b5e] flex flex-col md:rounded-3xl md:border md:border-white/10 shadow-2xl overflow-hidden">
+        <div id="app-container" class="relative w-full h-full min-h-0 max-h-[950px] max-w-[430px] bg-[#1f2b5e] flex flex-col md:rounded-3xl md:border md:border-white/10 shadow-2xl overflow-hidden safe-top safe-bottom">
             
             <!-- スプラッシュスクリーン -->
             <div id="splash-screen" class="absolute inset-0 z-[9999] flex flex-col items-center justify-center bg-[#1f2b5e] cursor-pointer" onclick="startApp()">
@@ -299,6 +316,17 @@
         async function startApp() {
             if (appStarted) return; 
             appStarted = true;
+            // ★★★ iPhone用 高さ再計算 ★★★
+    function updateVH() {
+        const vh = window.innerHeight * 0.01;
+        document.documentElement.style.setProperty('--vh', `${vh}px`);
+    }
+    updateVH();
+    window.addEventListener('resize', updateVH);
+    window.addEventListener('orientationchange', () => setTimeout(updateVH, 300));
+
+    checkOrientation();
+    // ... 以降は元のコードそのまま
             checkOrientation();
 
             const splash = document.getElementById('splash-screen');
