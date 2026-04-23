@@ -17,25 +17,26 @@
 
     <style>
                 /* 基本設定：スクロールバウンス(引っ張り)の防止 */
+                /* 基本設定：スクロールバウンス(引っ張り)の防止 */
         html, body {
             margin: 0;
             padding: 0;
             width: 100%;
-           /* height: 100dvh; /* ここで画面全体の高さを100dvhに固定 */
-            box-sizing: border-box; /* パディングを含めて100dvh内に収める（はみ出し防止） */
-            background-color: #0b1024;
-            overscroll-behavior: none; /* iOS特有のゴムのようなスクロールを無効化 */
-            -webkit-tap-highlight-color: transparent;
-            /* ★ここから追加：画面の四隅に強制固定して高さ計算バグを回避★ */
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            /* ★追加ここまで★ */
+            
+            /* ▼ ここがポイント！ ▼ */
+            /* 元の 100dvh に、これから下に追加するパディングの分を先に足しておく */
+            height: calc(100dvh + env(safe-area-inset-bottom));
+            
+            /* ましろさんのアイデア：これでPWAの初期描画バグを強制的に抑え込む */
+            padding-bottom: env(safe-area-inset-bottom);
+            /* ▲ ここまで ▲ */
 
-        
+            box-sizing: border-box;
+            background-color: #0b1024;
+            overscroll-behavior: none;
+            -webkit-tap-highlight-color: transparent;
         }
+
 
         /* スクロールバー非表示 */
         * { scrollbar-width: none; }
@@ -313,13 +314,6 @@
             if (appStarted) return; 
             appStarted = true;
             checkOrientation();
-
-    // ★ ここに「強制リサイズイベント」の空撃ちを追加 ★
-    // UIの描画が少し落ち着いたタイミング(100ms後)でブラウザに高さを再計算させる
-    setTimeout(() => {
-        window.dispatchEvent(new Event('resize'));
-    }, 100);
-
 
             const splash = document.getElementById('splash-screen');
             splash.classList.add('splash-fade-out');
