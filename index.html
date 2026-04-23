@@ -25,8 +25,11 @@
     -webkit-tap-highlight-color: transparent;
     height: 100%;
     overflow: hidden;
-    position: fixed;   /* ← 追加 */
-    width: 100%;       /* ← 追加 */
+}
+/* iOS Safari専用fix */
+html { height: -webkit-fill-available; }
+@supports (-webkit-touch-callout: none) {
+    body { height: -webkit-fill-available; }
 }
 
 
@@ -70,7 +73,8 @@
       ★ 究極のラッパー構造 ★
       画面(dvh)全体を覆い、その中央にアプリコンテナを配置します。
     -->
-    <div class="fixed inset-0 flex items-center justify-center bg-[#0b1024]">
+    <div class="w-full h-full flex items-center justify-center bg-[#0b1024]">
+
         
         <!-- アプリコンテナ本体 -->
         <div id="app-container" class="relative w-full h-full max-h-[950px] max-w-[430px] bg-[#1f2b5e] flex flex-col md:rounded-3xl md:border md:border-white/10 shadow-2xl overflow-hidden">
