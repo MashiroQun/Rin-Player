@@ -14,7 +14,7 @@ export default defineConfig({
         description: 'Rin☪︎ Official Music Player PWA',
         start_url: '/',
         display: 'standalone',
-        orientation": 'portrait', 
+        orientation: 'portrait', 
         background_color: '#2C3D85',
         theme_color: '#2C3D85',
         lang: 'ja',
