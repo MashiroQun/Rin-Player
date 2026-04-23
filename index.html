@@ -28,9 +28,6 @@
             -webkit-tap-highlight-color: transparent;
         
         }
-        .content {
-    margin-bottom: calc(0px - env(safe-area-inset-bottom));
-}
 
         /* スクロールバー非表示 */
         * { scrollbar-width: none; }
@@ -308,6 +305,17 @@
             if (appStarted) return; 
             appStarted = true;
             checkOrientation();
+
+    // ★ ここに「強制リサイズイベント」の空撃ちを追加 ★
+    // UIの描画が少し落ち着いたタイミング(100ms後)でブラウザに高さを再計算させる
+    setTimeout(() => {
+        window.dispatchEvent(new Event('resize'));
+    }, 100);
+
+    const splash = document.getElementById('splash-screen');
+    // ...以降は元のコードのまま...
+}
+
 
             const splash = document.getElementById('splash-screen');
             splash.classList.add('splash-fade-out');
