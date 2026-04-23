@@ -18,11 +18,17 @@
     <style>
         /* 基本設定：スクロールバウンス(引っ張り)の防止 */
         html, body {
-            margin: 0; padding: 0;
+            margin: 0;
             background-color: #0b1024;
             overscroll-behavior: none; /* iOS特有のゴムのようなスクロールを無効化 */
             -webkit-tap-highlight-color: transparent;
         }
+        body {
+    /* 縦画面の上部余白を調整 */
+    padding-top: env(safe-area-inset-top);
+    /* 縦画面の下部余白を調整 */
+    padding-bottom: env(safe-area-inset-bottom);
+}
 
         /* スクロールバー非表示 */
         * { scrollbar-width: none; }
