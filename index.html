@@ -58,19 +58,23 @@
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         .hide-scrollbar::-webkit-scrollbar { display: none; }
 
-                       /* セーフエリア対応：環境に応じたハイブリッド切り替え */
+                               /* セーフエリア対応：全デバイス最適化ハイブリッド */
         
-        /* 1. 【基本設定】ブラウザ（スマホ・PC）や、PCのPWA（インストール版）で開いた時 */
-        /* 余計な隙間を作らず、最低限（16px）の美しさを保つ */
+        /* 1. 基本設定（Android、Windows、PC、iPad、全ブラウザ） */
+        /* OSが優秀な環境では余計な隙間を作らず、最低限（16px）の美しさを保つ */
         .safe-top { padding-top: max(env(safe-area-inset-top), 16px); }
         .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom), 16px); }
 
-        /* 2. 【スマホのアプリ（PWA）用】スマホのホーム画面から起動した時のみ */
-        /* standalone（アプリ化）かつ、画面幅が768px未満（スマホサイズ）の時だけ適用 */
-        @media (display-mode: standalone) and (max-width: 767px) {
-            .safe-top { padding-top: max(env(safe-area-inset-top), 47px); }
-            .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom), 24px); }
+        /* 2. iPhoneのアプリ（PWA）専用の特別待遇 */
+        /* iOS特有のCSS仕様（-webkit-touch-callout）を検知し、Appleデバイスを特定 */
+        @supports (-webkit-touch-callout: none) {
+            /* さらに「PWA起動」かつ「スマホ画面幅（iPadを除外）」の条件を満たす時だけ適用 */
+            @media (display-mode: standalone) and (max-width: 767px) {
+                .safe-top { padding-top: max(env(safe-area-inset-top), 47px); }
+                .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom), 24px); }
+            }
         }
+
 
 
         /* レンジスライダー */
