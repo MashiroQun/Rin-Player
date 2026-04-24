@@ -38,18 +38,18 @@
         }
 
         /* 新設：アプリケーション全体を包含するラッパー */
-         .app-wrapper {
-            height: 100vh;
-            width: 100%;
+        .app-wrapper {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
             overscroll-behavior: contain;
             
-            /* 修正: typoを直し、Flexboxで中央配置 */
+            /* 中央配置はコンテナの m-auto に任せることで見切れを防止 */
             display: flex;
-            align-items: center;
-            justify-content: center;
+            flex-direction: column;
         }
+
 
             
         /* スクロールバー非表示 */
@@ -60,20 +60,20 @@
 
                                /* セーフエリア対応：全デバイス最適化ハイブリッド */
         
-        /* 1. 基本設定（Android、Windows、PC、iPad、全ブラウザ） */
-        /* OSが優秀な環境では余計な隙間を作らず、最低限（16px）の美しさを保つ */
+                /* 1. 基本：ブラウザUIがある全環境（iPadブラウザ・Windowsブラウザ等） */
         .safe-top { padding-top: max(env(safe-area-inset-top), 16px); }
         .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom), 16px); }
 
-        /* 2. iPhoneのアプリ（PWA）専用の特別待遇 */
-        /* iOS特有のCSS仕様（-webkit-touch-callout）を検知し、Appleデバイスを特定 */
+        /* 2. iPhoneのPWA専用（envバグ対策の実測値） */
+        /* Appleデバイスのみに存在するプロパティを検知 */
         @supports (-webkit-touch-callout: none) {
-            /* さらに「PWA起動」かつ「スマホ画面幅（iPadを除外）」の条件を満たす時だけ適用 */
+            /* PWAとして起動、かつiPhoneの画面幅である時のみ発動 */
             @media (display-mode: standalone) and (max-width: 767px) {
-                .safe-top { padding-top: max(env(safe-area-inset-top), 47px); }
-                .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom), 24px); }
+                .safe-top { padding-top: 47px; }
+                .safe-bottom { padding-bottom: 24px; }
             }
         }
+
 
 
 
@@ -99,7 +99,8 @@
     <div class="app-wrapper bg-[#0b1024]">
         
         <!-- アプリコンテナ本体（これを1つだけにまとめる） -->
-        <div id="app-container" class="relative w-full h-full max-h-[950px] max-w-[430px] bg-[#1f2b5e] flex flex-col md:rounded-3xl md:border md:border-white/10 shadow-2xl overflow-hidden m-auto">
+        <div id="app-container" class="relative w-full h-full md:max-h-[95vh] lg:h-[80vh] lg:w-auto lg:aspect-[390/844] bg-[#1f2b5e] flex flex-col md:rounded-[2.5rem] md:border md:border-white/10 shadow-2xl overflow-hidden m-auto shrink-0">
+
 
             <!-- 画面回転警告 -->
             <div id="orientation-msg" class="hidden fixed inset-0 z-[99999] bg-[#1f2b5e] flex-col items-center justify-center p-6 text-center">
