@@ -58,9 +58,19 @@
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         .hide-scrollbar::-webkit-scrollbar { display: none; }
 
-        /* セーフエリア対応 */
-        .safe-top { padding-top: max(env(safe-area-inset-top), 47px); }
-        .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom), 24px); }
+                /* セーフエリア対応：環境に応じたハイブリッド切り替え */
+        
+        /* 1. 【通常ブラウザ用】Safari、Chrome、PCなどで開いた時 */
+        /* ブラウザ自身のUIがあるため、余計な隙間を作らず最低限（16px）の美しさを保つ */
+        .safe-top { padding-top: max(env(safe-area-inset-top), 16px); }
+        .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom), 16px); }
+
+        /* 2. 【アプリ（PWA）用】ホーム画面に追加して全画面で起動した時 */
+        /* 実機で検証された、ノッチやホームバーを回避するベストな余白を強制適用 */
+        @media (display-mode: standalone) {
+            .safe-top { padding-top: max(env(safe-area-inset-top), 47px); }
+            .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom), 24px); }
+        }
 
         /* レンジスライダー */
         input[type="range"] { -webkit-appearance: none; background: transparent; cursor: pointer; }
