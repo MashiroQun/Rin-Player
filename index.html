@@ -58,24 +58,22 @@
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         .hide-scrollbar::-webkit-scrollbar { display: none; }
 
-                               /* セーフエリア対応：全デバイス最適化ハイブリッド */
+        /* セーフエリア対応：全デバイス最適化ハイブリッド */
         
-                /* 1. 基本：ブラウザUIがある全環境（iPadブラウザ・Windowsブラウザ等） */
+        /* 1. 基本：ブラウザUIがある全環境（iPadブラウザ・Windowsブラウザ等） */
         .safe-top { padding-top: max(env(safe-area-inset-top), 16px); }
         .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom), 16px); }
 
-        /* 2. iPhoneのPWA専用（envバグ対策の実測値） */
-        /* Appleデバイスのみに存在するプロパティを検知 */
+                /* 2. iPhoneのPWA専用（現在のバグ対策 ＋ 未来のバグ修正への備え） */
         @supports (-webkit-touch-callout: none) {
-            /* PWAとして起動、かつiPhoneの画面幅である時のみ発動 */
             @media (display-mode: standalone) and (max-width: 767px) {
-                .safe-top { padding-top: 47px; }
-                .safe-bottom { padding-bottom: 24px; }
+                /* 現在：バグでenvが0になるため、47pxが勝って適用される。
+                 未来：バグが直りenvが54pxなどになったら、envが勝って適用される！
+                */
+                .safe-top { padding-top: max(env(safe-area-inset-top), 47px); }
+                .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom), 24px); }
             }
         }
-
-
-
 
         /* レンジスライダー */
         input[type="range"] { -webkit-appearance: none; background: transparent; cursor: pointer; }
@@ -92,6 +90,47 @@
         /* SortableJS */
         .sortable-ghost { opacity: 0.3 !important; background: rgba(255, 255, 255, 0.05) !important; border: 2px dashed rgba(255, 255, 255, 0.6) !important; transform: scale(0.98); }
         .sortable-drag { opacity: 1 !important; background: rgba(255, 255, 255, 0.15) !important; backdrop-filter: blur(16px) !important; -webkit-backdrop-filter: blur(16px) !important; box-shadow: 0 15px 30px rgba(0,0,0,0.4) !important; border: 1px solid rgba(255, 255, 255, 0.4) !important; transform: scale(1.02); cursor: grabbing !important; }
+    
+                /* -------------------------------------------
+           デバイス別のコンテナサイズ最適化
+        ------------------------------------------- */
+        
+        /* 1. 【タブレット・PC共通】画面が広い端末の基本装飾 */
+        @media (min-width: 768px) {
+            #app-container {
+                max-height: 95vh;
+                border-radius: 2.5rem;
+                border: 1px solid rgba(255, 255, 255, 0.1);
+            }
+        }
+
+        /* 2. 【Windows/Mac等のPC用】 */
+        /* 画面幅1024px以上の広い画面で、80%縮小＋iPhone比率を適用 */
+        @media (min-width: 1024px) {
+            #app-container {
+                height: 80vh;
+                width: auto;
+                max-width: none; /* スマホ用の430px制限を解除 */
+                aspect-ratio: 390 / 844; /* iPhoneの比率を強制 */
+            }
+        }
+
+        /* 3. 【iPadの強制ガード（マウス接続時対策）】 */
+        /* iPadOS特有のプロパティを検知し、iPad ProなどがPC表示になるのを防ぐ */
+        @supports (-webkit-touch-callout: none) {
+            @media (min-width: 768px) {
+                #app-container {
+                    /* PC用の設定をすべて打ち消し、タブレット用に戻す */
+                    height: 100%;
+                    width: 100%;
+                    max-height: 95vh;
+                    max-width: 430px;
+                    aspect-ratio: auto;
+                }
+            }
+        }
+
+    
     </style>
 </head>
 <body class="text-white select-none overflow-hidden">
@@ -99,7 +138,7 @@
     <div class="app-wrapper bg-[#0b1024]">
         
         <!-- アプリコンテナ本体（これを1つだけにまとめる） -->
-        <div id="app-container" class="relative w-full h-full md:max-h-[95vh] lg:h-[80vh] lg:w-auto lg:aspect-[390/844] bg-[#1f2b5e] flex flex-col md:rounded-[2.5rem] md:border md:border-white/10 shadow-2xl overflow-hidden m-auto shrink-0">
+        <div id="app-container" class="relative w-full h-full max-w-[430px] bg-[#1f2b5e] flex flex-col shadow-2xl overflow-hidden m-auto shrink-0">
 
 
             <!-- 画面回転警告 -->
