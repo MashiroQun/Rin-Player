@@ -13,56 +13,53 @@
     <!-- 修正: 必要なタグのみ残し、レガシーなstatus-bar-styleは削除 -->
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 
     <style>
                 /* 報告書準拠：ルート要素の100vh固定とラッパーへの権限委譲 */
-                /* 物理座標への強制固定によるフルスクリーン・ハイブリッド型 */
-        html, body {
-            position: fixed; /* vhの計算バグを回避し、画面四隅にピン留め */
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            width: 100%;
-            height: 100%;
-            margin: 0;
-            padding: 0;
+        html {
+            background-color: #0b1024;
+            height: 100vh; /* dvh遅延バグを回避し、常に物理的な高さを確保 */
+            width: 100vw;
             overflow: hidden;
             overscroll-behavior: none;
-            background-color: #0b1024;
+        }
+
+        body {
+            height: 100vh;
+            margin: 0;
+            padding: 0;
+            overflow: hidden; /* bodyでのスクロールを完全に禁止 */
+            background-color: transparent;
             -webkit-tap-highlight-color: transparent;
         }
 
-        /* アプリケーション全体を包含するラッパー */
-        .app-wrapper {
-            position: absolute; /* 親(body)の四隅に完全に追従 */
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
+        /* 新設：アプリケーション全体を包含するラッパー */
+         .app-wrapper {
+            height: 100vh;
+            width: 100%;
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
             overscroll-behavior: contain;
             
-            /* Flexboxで中央配置 */
+            /* 修正: typoを直し、Flexboxで中央配置 */
             display: flex;
             align-items: center;
             justify-content: center;
         }
 
+            
         /* スクロールバー非表示 */
         * { scrollbar-width: none; }
         *::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         .hide-scrollbar::-webkit-scrollbar { display: none; }
 
-        /* セーフエリア対応（報告書準拠：max関数を廃止し直接適用） */
-        .safe-top { padding-top: env(safe-area-inset-top, 0); }
-        .safe-bottom { padding-bottom: env(safe-area-inset-bottom, 0); }
+        /* セーフエリア対応 */
+        .safe-top { padding-top: max(env(safe-area-inset-top), 47px); }
+        .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom), 24px); }
 
         /* レンジスライダー */
         input[type="range"] { -webkit-appearance: none; background: transparent; cursor: pointer; }
@@ -95,12 +92,15 @@
             </div>
 
             <!-- スプラッシュスクリーン -->
-                                    <div class="relative w-36 h-36 mb-10 animate-float-large">
-                    </div>
             <div id="splash-screen" class="absolute inset-0 z-[9999] flex flex-col items-center justify-center bg-[#1f2b5e] cursor-pointer" onclick="startApp()">
+                <!-- 中身は既存のまま -->
                 <div class="relative w-36 h-36 mb-10 animate-float-large">
-
-
+                    <img src="/character.png" class="w-full h-full object-cover rounded-full z-10 border-[3px] border-white/10 shadow-2xl">
+                    <div class="absolute inset-0 rounded-full icon-glow"></div>
+                </div>
+                <h1 class="text-xl font-bold tracking-[0.1em] text-white mb-4 drop-shadow-lg text-center">Rin☪︎ Music Player</h1>
+                <div class="absolute bottom-32 animate-pulse text-white/70 text-[10px] font-bold tracking-[0.2em]">- TAP TO START -</div>
+            </div>
 
             <!-- メインの切り替え領域 -->
             <main class="flex-1 w-full relative overflow-hidden bg-[#2b3978]">
