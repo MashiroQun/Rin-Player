@@ -72,14 +72,14 @@
     /* 【追加】 iPhoneのSafariブラウザでノッチにめり込むバグを回避 */
     /* アプリ化していない（browser）かつスマホ幅なら、上を47pxに固定してノッチを守る */
     @media (max-width: 767px) {
-        .safe-top { padding-top: 47px; }
+        .safe-top { padding-top: max(env(safe-area-inset-top), 47px); }
     }
 
     /* 【維持】 iPhoneのアプリ（PWA）専用設定 */
     /* アプリ化した時は、ましろさんが決めた上下の完璧な余白（47/24）を適用 */
     @media (display-mode: standalone) and (max-width: 767px) {
-        .safe-top { padding-top: 47px; }
-        .safe-bottom { padding-bottom: 24px; }
+        .safe-top { padding-top: max(env(safe-area-inset-top), 47px); }
+        .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom), 24px); }
     }
 }
 
