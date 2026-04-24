@@ -9,8 +9,10 @@
     <link rel="icon" href="/character.png" type="image/png">
     <link rel="apple-touch-icon" href="/character.png">
     <link rel="manifest" href="/manifest.webmanifest">
+    
+    <!-- 修正: 必要なタグのみ残し、レガシーなstatus-bar-styleは削除 -->
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style">
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
@@ -35,17 +37,17 @@
         }
 
         /* 新設：アプリケーション全体を包含するラッパー */
-        .app-wrapper {
+         .app-wrapper {
             height: 100vh;
             width: 100%;
-            overflow-y: auto; /* 内部でのスクロールを許可 */
+            overflow-y: auto;
             -webkit-overflow-scrolling: touch;
-            overscroll-behavior: contain; /* バウンスをコンテナ内に封じ込める */
+            overscroll-behavior: contain;
             
-            /* 中央配置のための既存のTailwindクラスと組み合わせる設定 */
+            /* 修正: typoを直し、Flexboxで中央配置 */
             display: flex;
             align-items: center;
-            justify-center: center;
+            justify-content: center;
         }
 
             
@@ -56,8 +58,8 @@
         .hide-scrollbar::-webkit-scrollbar { display: none; }
 
         /* セーフエリア対応 */
-        .safe-top { padding-top: max(env(safe-area-inset-top), 12px); }
-        .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom), 12px); }
+        .safe-top { padding-top: max(env(safe-area-inset-top), 47px); }
+        .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom), 24px); }
 
         /* レンジスライダー */
         input[type="range"] { -webkit-appearance: none; background: transparent; cursor: pointer; }
@@ -77,26 +79,21 @@
     </style>
 </head>
 <body class="text-white select-none overflow-hidden">
+    <!-- ラッパー -->
     <div class="app-wrapper bg-[#0b1024]">
+        
+        <!-- アプリコンテナ本体（これを1つだけにまとめる） -->
         <div id="app-container" class="relative w-full h-full max-h-[950px] max-w-[430px] bg-[#1f2b5e] flex flex-col md:rounded-3xl md:border md:border-white/10 shadow-2xl overflow-hidden m-auto">
 
-    <!-- 画面回転警告 -->
-    <div id="orientation-msg" class="hidden fixed inset-0 z-[99999] bg-[#1f2b5e] flex-col items-center justify-center p-6 text-center">
-        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="mb-4 opacity-70"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>
-        <p class="font-bold tracking-widest text-lg">画面を縦向きにして<br>お使いください</p>
-    </div>
+            <!-- 画面回転警告 -->
+            <div id="orientation-msg" class="hidden fixed inset-0 z-[99999] bg-[#1f2b5e] flex-col items-center justify-center p-6 text-center">
+                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="mb-4 opacity-70"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>
+                <p class="font-bold tracking-widest text-lg">画面を縦向きにして<br>お使いください</p>
+            </div>
 
-    <!-- 
-      ★ 究極のラッパー構造 ★
-      画面(dvh)全体を覆い、その中央にアプリコンテナを配置します。
-    -->
-        <div class="absolute inset-0 flex items-center justify-center bg-[#0b1024]">
-        
-        <!-- アプリコンテナ本体 -->
-        <div id="app-container" class="relative w-full h-full max-h-[950px] max-w-[430px] bg-[#1f2b5e] flex flex-col md:rounded-3xl md:border md:border-white/10 shadow-2xl overflow-hidden">
-            
             <!-- スプラッシュスクリーン -->
             <div id="splash-screen" class="absolute inset-0 z-[9999] flex flex-col items-center justify-center bg-[#1f2b5e] cursor-pointer" onclick="startApp()">
+                <!-- 中身は既存のまま -->
                 <div class="relative w-36 h-36 mb-10 animate-float-large">
                     <img src="/character.png" class="w-full h-full object-cover rounded-full z-10 border-[3px] border-white/10 shadow-2xl">
                     <div class="absolute inset-0 rounded-full icon-glow"></div>
@@ -105,9 +102,9 @@
                 <div class="absolute bottom-32 animate-pulse text-white/70 text-[10px] font-bold tracking-[0.2em]">- TAP TO START -</div>
             </div>
 
-            <!-- メインの切り替え領域（各画面をこの中に重ねる） -->
+            <!-- メインの切り替え領域 -->
             <main class="flex-1 w-full relative overflow-hidden bg-[#2b3978]">
-                
+                <!-- ここから下の #view-player 等はそのまま -->
                 <!-- PLAYER VIEW -->
                 <section id="view-player" class="absolute inset-0 flex flex-col w-full h-full z-10 bg-[#2b3978]">
                     <div class="w-full flex-shrink-0 bg-[#1f2b5e] safe-top pb-2 border-b border-white/5 relative z-20 shadow-sm">
