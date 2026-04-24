@@ -61,26 +61,28 @@
 
                 /* セーフエリア対応（完全版） */
         
-        /* 1. 全環境の基本（iPad・Windows・Android等） */
-        .safe-top { padding-top: max(env(safe-area-inset-top), 16px); }
-        .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom), 16px); }
+        /* 1. 基本：ブラウザUIがある全環境（iPad、Windows、Android、iPhoneブラウザ） */
+/* envがバグで0を返すiPhoneブラウザでも、最低限16pxは確保する基本設定 */
+.safe-top { padding-top: max(env(safe-area-inset-top), 16px); }
+.safe-bottom { padding-bottom: max(env(safe-area-inset-bottom), 16px); }
 
-        /* iOS専用の調整（Appleデバイスのみ検知） */
-        @supports (-webkit-touch-callout: none) {
-            
-            /* 2. iPhoneの【ブラウザ】と【アプリ】共通の対策 */
-            /* envが0になって上に突き破るのを防ぐため、スマホ幅なら常に上部47pxを保証 */
-            @media (max-width: 767px) {
-                .safe-top { padding-top: max(env(safe-area-inset-top), 47px); }
-                /* ※ブラウザは下にSafariのバーがあるので、下の余白は基本の16pxで丁度いい */
-            }
+/* iOS専用の追加調整：Appleデバイス（iPhone/iPad）のみを狙い撃ち */
+@supports (-webkit-touch-callout: none) {
 
-            /* 3. iPhoneの【アプリ（PWA）】専用の追加調整 */
-            /* アプリ化してSafariのバーが消えた時だけ、ホームバー用の24pxを追加 */
-            @media (display-mode: standalone) and (max-width: 767px) {
-                .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom), 24px); }
-            }
-        }
+    /* 【追加】 iPhoneのSafariブラウザでノッチにめり込むバグを回避 */
+    /* アプリ化していない（browser）かつスマホ幅なら、上を47pxに固定してノッチを守る */
+    @media (max-width: 767px) {
+        .safe-top { padding-top: 47px; }
+    }
+
+    /* 【維持】 iPhoneのアプリ（PWA）専用設定 */
+    /* アプリ化した時は、ましろさんが決めた上下の完璧な余白（47/24）を適用 */
+    @media (display-mode: standalone) and (max-width: 767px) {
+        .safe-top { padding-top: 47px; }
+        .safe-bottom { padding-bottom: 24px; }
+    }
+}
+
 
         /* レンジスライダー */
         input[type="range"] { -webkit-appearance: none; background: transparent; cursor: pointer; }
