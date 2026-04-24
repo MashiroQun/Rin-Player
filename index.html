@@ -37,18 +37,19 @@
             -webkit-tap-highlight-color: transparent;
         }
 
+        /* 新設：アプリケーション全体を包含するラッパー */
         .app-wrapper {
-    position: absolute;
-    top: 0; left: 0; right: 0; bottom: 0;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    overscroll-behavior: contain;
-    
-    display: flex;
-    flex-direction: column;
-    align-items: center;    /* 左右中央 */
-    justify-content: center; /* 上下中央（これで下の隙間が消えます） */
-}
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior: contain;
+            
+            /* 中央配置はコンテナの m-auto に任せ、上部見切れを防止 */
+            display: flex;
+            flex-direction: column;
+        }
+
 
 
             
@@ -60,25 +61,26 @@
 
                 /* セーフエリア対応（完全版） */
         
-        /* 1. 基本：Windows、iPad、Android用（iPhone以外の余白をスッキリさせる） */
-.safe-top { padding-top: max(env(safe-area-inset-top), 16px); }
-.safe-bottom { padding-bottom: max(env(safe-area-inset-bottom), 16px); }
+        /* 1. 全環境の基本（iPad・Windows・Android等） */
+        .safe-top { padding-top: max(env(safe-area-inset-top), 16px); }
+        .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom), 16px); }
 
-/* iOS（Appleデバイス）専用のバグ対策 */
-@supports (-webkit-touch-callout: none) {
-    
-    /* 2. iPhoneの【ブラウザ】と【アプリ】共通 */
-    /* iPhoneの画面幅（767px以下）なら、ブラウザで見ても上がノッチにめり込まないよう、ましろさんの47pxを適用 */
-    @media (max-width: 767px) {
-        .safe-top { padding-top: max(env(safe-area-inset-top), 47px); }
-    }
+        /* iOS専用の調整（Appleデバイスのみ検知） */
+        @supports (-webkit-touch-callout: none) {
+            
+            /* 2. iPhoneの【ブラウザ】と【アプリ】共通の対策 */
+            /* envが0になって上に突き破るのを防ぐため、スマホ幅なら常に上部47pxを保証 */
+            @media (max-width: 767px) {
+                .safe-top { padding-top: max(env(safe-area-inset-top), 47px); }
+                /* ※ブラウザは下にSafariのバーがあるので、下の余白は基本の16pxで丁度いい */
+            }
 
-    /* 3. iPhoneの【アプリ（PWA）】専用 */
-    /* アプリ化した時だけ、ましろさんの24pxを下部に適用してホームバーを避ける */
-    @media (display-mode: standalone) and (max-width: 767px) {
-        .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom), 24px); }
-    }
-}
+            /* 3. iPhoneの【アプリ（PWA）】専用の追加調整 */
+            /* アプリ化してSafariのバーが消えた時だけ、ホームバー用の24pxを追加 */
+            @media (display-mode: standalone) and (max-width: 767px) {
+                .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom), 24px); }
+            }
+        }
 
         /* レンジスライダー */
         input[type="range"] { -webkit-appearance: none; background: transparent; cursor: pointer; }
