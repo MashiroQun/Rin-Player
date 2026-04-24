@@ -37,19 +37,18 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-        /* 新設：アプリケーション全体を包含するラッパー */
         .app-wrapper {
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
-            overscroll-behavior: contain;
-            
-            /* 中央配置はコンテナの m-auto に任せ、上部見切れを防止 */
-            display: flex;
-            flex-direction: column;
-        }
-
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    
+    display: flex;
+    flex-direction: column;
+    align-items: center;    /* 左右中央 */
+    justify-content: center; /* 上下中央（これで下の隙間が消えます） */
+}
 
 
             
@@ -61,28 +60,25 @@
 
                 /* セーフエリア対応（完全版） */
         
-        /* 1. 基本：ブラウザUIがある全環境（iPad、Windows、Android、iPhoneブラウザ） */
-/* envがバグで0を返すiPhoneブラウザでも、最低限16pxは確保する基本設定 */
+        /* 1. 基本：Windows、iPad、Android用（iPhone以外の余白をスッキリさせる） */
 .safe-top { padding-top: max(env(safe-area-inset-top), 16px); }
 .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom), 16px); }
 
-/* iOS専用の追加調整：Appleデバイス（iPhone/iPad）のみを狙い撃ち */
+/* iOS（Appleデバイス）専用のバグ対策 */
 @supports (-webkit-touch-callout: none) {
-
-    /* 【追加】 iPhoneのSafariブラウザでノッチにめり込むバグを回避 */
-    /* アプリ化していない（browser）かつスマホ幅なら、上を47pxに固定してノッチを守る */
+    
+    /* 2. iPhoneの【ブラウザ】と【アプリ】共通 */
+    /* iPhoneの画面幅（767px以下）なら、ブラウザで見ても上がノッチにめり込まないよう、ましろさんの47pxを適用 */
     @media (max-width: 767px) {
         .safe-top { padding-top: max(env(safe-area-inset-top), 47px); }
     }
 
-    /* 【維持】 iPhoneのアプリ（PWA）専用設定 */
-    /* アプリ化した時は、ましろさんが決めた上下の完璧な余白（47/24）を適用 */
+    /* 3. iPhoneの【アプリ（PWA）】専用 */
+    /* アプリ化した時だけ、ましろさんの24pxを下部に適用してホームバーを避ける */
     @media (display-mode: standalone) and (max-width: 767px) {
-        .safe-top { padding-top: max(env(safe-area-inset-top), 47px); }
         .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom), 24px); }
     }
 }
-
 
         /* レンジスライダー */
         input[type="range"] { -webkit-appearance: none; background: transparent; cursor: pointer; }
