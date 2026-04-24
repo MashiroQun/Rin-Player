@@ -13,6 +13,7 @@
     <!-- 修正: 必要なタグのみ残し、レガシーなstatus-bar-styleは削除 -->
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
@@ -92,7 +93,7 @@
             </div>
 
             <!-- スプラッシュスクリーン -->
-            <div id="splash-screen" class="absolute inset-0 z-[9999] flex flex-col items-center justify-center bg-[#1f2b5e] cursor-pointer" onclick="startApp()">
+            <!--<div id="splash-screen" class="absolute inset-0 z-[9999] flex flex-col items-center justify-center bg-[#1f2b5e] cursor-pointer" onclick="startApp()">
                 <!-- 中身は既存のまま -->
                 <div class="relative w-36 h-36 mb-10 animate-float-large">
                     <img src="/character.png" class="w-full h-full object-cover rounded-full z-10 border-[3px] border-white/10 shadow-2xl">
