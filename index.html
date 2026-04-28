@@ -60,32 +60,32 @@
 
                
         /* ベース (ブラウザ共通) */
-.safe-top { padding-top: max(env(safe-area-inset-top), 0px); }
-.safe-bottom { padding-bottom: max(env(safe-area-inset-bottom), 0px); }
+.safe-top { padding-top: max(env(safe-area-inset-top, 0px), 0px); }
+.safe-bottom { padding-bottom: max(env(safe-area-inset-bottom, 0px), 0px); }
 
 /* --- iPhone ブラウザ --- */
-.is-iphone .safe-top { padding-top: max(env(safe-area-inset-top 0), 34px); }
-.is-iphone .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom 0), 0px); }
+.is-iphone .safe-top { padding-top: max(env(safe-area-inset-top, 0px), 16px); }
+.is-iphone .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom, 0px), 16px); }
 
 /* --- iPad ブラウザ --- */
-.is-ipad .safe-top { padding-top: max(env(safe-area-inset-top 0), 34px); }
-.is-ipad .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom 0), 0px); }
+.is-ipad .safe-top { padding-top: max(env(safe-area-inset-top, 0px), 16px); }
+.is-ipad .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom, 0px), 16px); }
 
 /* =========================================
    PWA (Standalone) モードの設定
 ========================================= */
 @media (display-mode: standalone) {
     /* ベース (PWA共通) */
-    .safe-top { padding-top: max(env(safe-area-inset-top 0), 16px); }
-    .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom 0), 16px); }
+    .safe-top { padding-top: max(env(safe-area-inset-top, 0px), 16px); }
+    .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom, 0px), 16px); }
 
     /* iPhone PWA */
-    .is-iphone .safe-top { padding-top: max(env(safe-area-inset-top 0), 47px); }
-    .is-iphone .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom 0), 24px);}
+    .is-iphone .safe-top { padding-top: max(env(safe-area-inset-top, 0px), 47px); }
+    .is-iphone .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom, 0px), 24px);}
     
     /* iPad PWA */
-    .is-ipad .safe-top { padding-top: max(env(safe-area-inset-top 0), 16px); } /* iPadはステータスバーが細い場合が多いので調整 */
-    .is-ipad .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom 0), 16px);}
+    .is-ipad .safe-top { padding-top: max(env(safe-area-inset-top, 0px), 16px); } /* iPadはステータスバーが細い場合が多いので調整 */
+    .is-ipad .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom, 0px), 16px);}
     
     /* Windows アプリ化 (PWA) */
     .is-windows .safe-top { padding-top: 16px; }    /* Windowsはノッチがないため固定値 */
