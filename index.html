@@ -13,7 +13,7 @@
     <!-- 修正: 必要なタグのみ残し、レガシーなstatus-bar-styleは削除 -->
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <!--<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">-->
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
@@ -60,32 +60,32 @@
 
                
         /* ベース (ブラウザ共通) */
-.safe-top { padding-top: max(env(safe-area-inset-top), 16px); }
-.safe-bottom { padding-bottom: max(env(safe-area-inset-bottom), 16px); }
+.safe-top { padding-top: max(env(safe-area-inset-top), 0px); }
+.safe-bottom { padding-bottom: max(env(safe-area-inset-bottom), 0px); }
 
 /* --- iPhone ブラウザ --- */
-.is-iphone .safe-top { padding-top: max(env(safe-area-inset-top), 47px); }
-.is-iphone .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom), 16px); }
+.is-iphone .safe-top { padding-top: max(env(safe-area-inset-top 0), 47px); }
+.is-iphone .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom 0), 16px); }
 
 /* --- iPad ブラウザ --- */
-.is-ipad .safe-top { padding-top: max(env(safe-area-inset-top), 24px); }
-.is-ipad .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom), 24px); }
+.is-ipad .safe-top { padding-top: max(env(safe-area-inset-top 0), 24px); }
+.is-ipad .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom 0), 24px); }
 
 /* =========================================
    PWA (Standalone) モードの設定
 ========================================= */
 @media (display-mode: standalone) {
     /* ベース (PWA共通) */
-    .safe-top { padding-top: max(env(safe-area-inset-top), 16px); }
-    .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom), 16px); }
+    .safe-top { padding-top: max(env(safe-area-inset-top 0), 16px); }
+    .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom 0), 16px); }
 
     /* iPhone PWA */
-    .is-iphone .safe-top { padding-top: max(env(safe-area-inset-top), 47px); }
-    .is-iphone .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom), 24px);}
+    .is-iphone .safe-top { padding-top: max(env(safe-area-inset-top 0), 47px); }
+    .is-iphone .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom 0), 24px);}
     
     /* iPad PWA */
-    .is-ipad .safe-top { padding-top: max(env(safe-area-inset-top), 16px); } /* iPadはステータスバーが細い場合が多いので調整 */
-    .is-ipad .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom), 16px);}
+    .is-ipad .safe-top { padding-top: max(env(safe-area-inset-top 0), 16px); } /* iPadはステータスバーが細い場合が多いので調整 */
+    .is-ipad .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom 0), 16px);}
     
     /* Windows アプリ化 (PWA) */
     .is-windows .safe-top { padding-top: 16px; }    /* Windowsはノッチがないため固定値 */
