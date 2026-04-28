@@ -63,9 +63,10 @@
 .safe-top { padding-top: max(env(safe-area-inset-top, 0px), 0px); }
 .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom, 0px), 0px); }
 
-/* --- iPhone ブラウザ --- */
-.is-iphone .safe-top { padding-top: max(env(safe-area-inset-top, 0px),47px); }
-.is-iphone .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom, 0px), 10px); }
+/* --- iPad ブラウザ --- */
+/* 変更：fixedを外すため、75pxではなく最低限の24pxに変更 */
+.is-ipad .safe-top { padding-top: max(env(safe-area-inset-top, 0px), 24px); }
+.is-ipad .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom, 0px), 24px); }
 
 /* --- iPad ブラウザ --- */
 .is-ipad .safe-top { padding-top: max(env(safe-area-inset-top, 0px), 75px); }
@@ -73,16 +74,25 @@
 
 /* ブラウザで開いた時（PWAではない時）の、勝手な上にスライドする挙動を防止 */
 @media all and (display-mode: browser) {
-    html.is-iphone, html.is-ipad,
-    html.is-iphone body, html.is-ipad body {
-        position: fixed; /* 画面をガッチリ固定して上にスライドさせない */
+    /* 変更：ここはiPhone専用にし、成功しているfixedを維持する */
+    html.is-iphone, html.is-iphone body {
+        position: fixed;
         top: 0;
         left: 0;
         width: 100%;
-        height: 100%; /* 100vhのズレをなくす */
-        overscroll-behavior: none; /* Safari特有のバウンス（ゴムバンド）効果を消す */
+        height: 100%;
+        overscroll-behavior: none;
+    }
+
+    /* 追加：iPadはfixedを使わず、dvhでSafariのタブ伸縮に追従させる */
+    html.is-ipad, html.is-ipad body {
+        height: 100dvh;
+        margin: 0;
+        padding: 0;
+        overflow: hidden; /* スクロールによる見切れだけを防ぐ */
     }
 }
+
 
 
 /* =========================================
