@@ -31,12 +31,10 @@
     -webkit-tap-highlight-color: transparent;
 }
 
-.app-wrapper {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
+
+    .app-wrapper {
+    position: relative;
+    min-height: 100dvh;
     display: flex;
     justify-content: center;
     align-items: stretch;
@@ -52,13 +50,7 @@
            2. セーフエリア対応 (上下の余白)
         ========================================= */
         /* PWAやブラウザの不要な強制余白を削除し、純粋なセーフエリアのみに依存させる */
-        @supports (-webkit-touch-callout: none) {
-  @media (min-width: 768px) {
-    .safe-top {
-      padding-top: 0 !important;
-    }
-  }
-}
+        
         
         .safe-top { padding-top: env(safe-area-inset-top, 0px); }
         .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom, 0px), 8px); }
