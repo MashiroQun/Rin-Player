@@ -21,32 +21,27 @@
            1. 最強の高さ調整（Chrome・Safari完全対応）
         ========================================= */
         html, body {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            margin: 0;
-            padding: 0;
-            background-color: #0b1024;
-            overflow: hidden;
-            overscroll-behavior: none;
-            -webkit-tap-highlight-color: transparent;
-        }
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    background-color: #0b1024;
+    overflow: hidden;
+    overscroll-behavior: none;
+    -webkit-tap-highlight-color: transparent;
+}
 
-        .app-wrapper {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100vh;  /* 古いブラウザ用フォールバック */
-            height: 100dvh; /* Chromeのツールバー回避の要 */
-            display: flex;
-            justify-content: center;
-            align-items: stretch; /* ★超重要: 中央揃えをやめ、上下の余白を作らず100%引き伸ばす */
-            overflow: hidden;
-        }
-
+.app-wrapper {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    justify-content: center;
+    align-items: stretch;
+    overflow: hidden;
+}
         /* スクロールバー非表示 */
         * { scrollbar-width: none; }
         *::-webkit-scrollbar { display: none; }
