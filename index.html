@@ -61,12 +61,12 @@
         /* =========================================
            2. ベース (通常のブラウザ・非PWA時)
         ========================================= */
-        .safe-top { padding-top: max(env(safe-area-inset-top, 0px), 16px); }
-        .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom, 0px), 16px); }
+        .safe-top { padding-top: max(env(safe-area-inset-top, 0px), 0px); }
+        .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom, 0px), 0px); }
 
         /* --- iPhone ブラウザ --- */
-        .is-iphone .safe-top { padding-top: max(env(safe-area-inset-top, 0px), 5px); }
-        .is-iphone .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom, 0px), 5px); }
+        .is-iphone .safe-top { padding-top: max(env(safe-area-inset-top, 0px), 0px); }
+        .is-iphone .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom, 0px), 0px); }
 
         /* --- iPad ブラウザ --- */
         .is-ipad .safe-top { padding-top: max(env(safe-area-inset-top, 0px), 0px); }
