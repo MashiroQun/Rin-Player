@@ -18,30 +18,32 @@
 
     <style>
         /* =========================================
-           1. 最強の高さ調整（JSと連動）
+           1. 最強の高さ調整（Chrome・Safari完全対応）
         ========================================= */
-        :root {
-            /* JavaScriptでリアルタイムの画面高さがここに入ります */
-            --app-height: 100vh; 
-        }
-
         html, body {
-            background-color: #0b1024;
-            height: var(--app-height);
-            width: 100vw;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             margin: 0;
             padding: 0;
+            background-color: #0b1024;
             overflow: hidden;
             overscroll-behavior: none;
             -webkit-tap-highlight-color: transparent;
         }
 
         .app-wrapper {
-            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
             width: 100%;
+            height: 100vh;  /* 古いブラウザ用フォールバック */
+            height: 100dvh; /* Chromeのツールバー回避の要 */
             display: flex;
-            align-items: center;
             justify-content: center;
+            align-items: stretch; /* ★超重要: 中央揃えをやめ、上下の余白を作らず100%引き伸ばす */
             overflow: hidden;
         }
 
@@ -54,14 +56,9 @@
         /* =========================================
            2. セーフエリア対応 (上下の余白)
         ========================================= */
+        /* PWAやブラウザの不要な強制余白を削除し、純粋なセーフエリアのみに依存させる */
         .safe-top { padding-top: env(safe-area-inset-top, 0px); }
-        .safe-bottom { padding-bottom: env(safe-area-inset-bottom, 0px); }
-
-        /* PWAとしてホーム画面に追加された時のみ余白を広げる */
-        @media (display-mode: standalone) {
-            .safe-top { padding-top: max(env(safe-area-inset-top, 0px), 24px); }
-            .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom, 0px), 24px); }
-        }
+        .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom, 0px), 8px); }
 
         #splash-screen {
             padding-top: env(safe-area-inset-top, 0px);
@@ -88,8 +85,8 @@
     <!-- ラッパー -->
     <div class="app-wrapper bg-[#0b1024]">
         
-        <!-- ▼ 修正箇所: max-h-[950px] と m-auto を削除して隙間を無くしました ▼ -->
-        <div id="app-container" class="relative w-full h-full max-w-[430px] bg-[#1f2b5e] flex flex-col md:rounded-3xl md:border md:border-white/10 shadow-2xl overflow-hidden">
+        <!-- ▼修正箇所: max-hと角丸設定(rounded)を削除し、上下の端にピッタリ張り付くように変更▼ -->
+        <div id="app-container" class="relative w-full max-w-[430px] bg-[#1f2b5e] flex flex-col shadow-2xl overflow-hidden sm:border-x sm:border-white/10">
 
             <!-- 画面回転警告 -->
             <div id="orientation-msg" class="hidden fixed inset-0 z-[99999] bg-[#1f2b5e] flex-col items-center justify-center p-6 text-center">
@@ -289,15 +286,6 @@
 
     <!-- JavaScript -->
     <script>
-        // ▼ JavaScriptで「ブラウザの正確な高さ」をリアルタイムで取得しCSSに送る ▼
-        const setAppHeight = () => {
-            const doc = document.documentElement;
-            doc.style.setProperty('--app-height', `${window.innerHeight}px`);
-        };
-        window.addEventListener('resize', setAppHeight);
-        window.addEventListener('orientationchange', setAppHeight);
-        setAppHeight(); // 初回実行
-
         // === 画面回転監視 ===
         function checkOrientation() {
             const msg = document.getElementById('orientation-msg');
@@ -316,7 +304,7 @@
         const CACHE_KEY = 'video_cache_v12';
 
         let player, appStarted = false;
-        let allPlaylist =[], activePlaylist = [], playbackSequence =[], currentSeqIndex = 0;
+        let allPlaylist = [], activePlaylist =[], playbackSequence =[], currentSeqIndex = 0;
         let sortableInst = null, isShuffle = false, repeatMode = 0;
         let editingPlaylist =[];
         let tickInterval = null; 
