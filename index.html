@@ -35,7 +35,7 @@
 .app-wrapper {
     position: relative;
     width: 100%;
-    min-height: 100vh;
+    min-height: 100dvh;
 
     display: flex;
     justify-content: center;
@@ -592,7 +592,7 @@
             modal.classList.add('opacity-0'); box.classList.remove('scale-100'); box.classList.add('scale-95');
             setTimeout(() => { modal.classList.add('hidden'); modal.classList.remove('flex'); }, 300);
         }
-        <script>
+    
 /* ===== iOS Safari 初期高さバグ修正 ===== */
 function fixViewportHeight() {
     document.documentElement.style.setProperty(
@@ -609,7 +609,7 @@ window.addEventListener('load', () => {
 /* UI変化対応（タブ切り替え・回転など） */
 window.addEventListener('resize', fixViewportHeight);
 window.addEventListener('orientationchange', fixViewportHeight);
-</script>
+
     </script>
 </body>
 </html>
