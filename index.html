@@ -10,7 +10,6 @@
     <link rel="apple-touch-icon" href="/character.png">
     <link rel="manifest" href="/manifest.webmanifest">
     
-    <!-- 修正: 必要なタグのみ残し、レガシーなstatus-bar-styleは削除 -->
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
 
@@ -18,62 +17,28 @@
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 
     <style>
-                /* =========================================
-           1. ルート・ボディの高さ調整
-        ========================================= 
-        html {
-            background-color: #0b1024;
-            height: 100dvh;
-            width: 100vw;
-            overflow: hidden;
-            overscroll-behavior: none;
-        }
-
-        body {
-            height: 100dvh;
-            margin: 0;
-            padding: 0;
-            overflow: hidden;
-            background-color: transparent;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        .app-wrapper {
-            height: 100dvh;
-            width: 100%;
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
-            overscroll-behavior: contain;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }*/
-
         /* =========================================
-           1. ルート・ボディの高さ調整
+           1. 最強の高さ調整（JSと連動）
         ========================================= */
+        :root {
+            /* JavaScriptでリアルタイムの画面高さがここに入ります */
+            --app-height: 100vh; 
+        }
+
         html, body {
-            position: fixed; /* ← これが最強の固定策です */
-            top: 0;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            width: 100%;
-            height: 100%;
+            background-color: #0b1024;
+            height: var(--app-height);
+            width: 100vw;
             margin: 0;
             padding: 0;
             overflow: hidden;
-            background-color: #0b1024;
             overscroll-behavior: none;
             -webkit-tap-highlight-color: transparent;
         }
 
         .app-wrapper {
-            position: absolute;
-            top: 0;
-            bottom: 0;
-            left: 0;
-            right: 0;
+            height: 100%;
+            width: 100%;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -87,76 +52,20 @@
         .hide-scrollbar::-webkit-scrollbar { display: none; }
 
         /* =========================================
-           2. ベース (通常のブラウザ・非PWA時)
+           2. セーフエリア対応 (上下の余白)
         ========================================= */
-        .safe-top { padding-top: max(env(safe-area-inset-top, 0px), 0px); }
-        .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom, 0px), 0px); }
+        .safe-top { padding-top: env(safe-area-inset-top, 0px); }
+        .safe-bottom { padding-bottom: env(safe-area-inset-bottom, 0px); }
 
-        /* --- iPhone ブラウザ --- */
-        .is-iphone .safe-top { padding-top: max(env(safe-area-inset-top, 0px), 0px); }
-        .is-iphone .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom, 0px), 0px); }
-
-        /* --- iPad ブラウザ --- */
-        .is-ipad .safe-top { padding-top: max(env(safe-area-inset-top, 0px), 0px); }
-        .is-ipad .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom, 0px), 0px); }
-
-        @media all and (display-mode: browser) {
-            html.is-iphone, html.is-iphone body {
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%; /* 親が100vh固定なので100%でOK */
-                overscroll-behavior: none;
-            }
-            /*html.is-ipad, html.is-ipad body {
-                height: 100dvh;
-                margin: 0;
-                padding: 0;
-                overflow: hidden;
-            }*/
-        }
-
-        /* =========================================
-           3. PWA (Standalone) モードの設定
-        ========================================= */
+        /* PWAとしてホーム画面に追加された時のみ余白を広げる */
         @media (display-mode: standalone) {
-            /* 全体のPWA基本余白 */
-            .safe-top { padding-top: max(env(safe-area-inset-top, 0px), 16px); }
-            .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom, 0px), 16px); }
-
-            /*iPhone PWA: Chin Gap防止のため100vh固定と数値指定*/ 
-            html.is-iphone, html.is-iphone body, html.is-iphone .app-wrapper {
-                height: 100vh !important;
-            }
-
-            html.is-iphone, html.is-iphone body {
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                overscroll-behavior: none;
-            }
-            .is-iphone .safe-top { padding-top: max(env(safe-area-inset-top, 0px), 24px); }
-            .is-iphone .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom, 0px),24px);}
-            
-            /* iPad PWA */
-            .is-ipad .safe-top { padding-top: max(env(safe-area-inset-top, 0px), 20px); } 
-            .is-ipad .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom, 0px), 20px);}
-            
-            /* Windows */
-            .is-windows .safe-top { padding-top: 16px; }
-            .is-windows .safe-bottom { padding-bottom: 16px; }
+            .safe-top { padding-top: max(env(safe-area-inset-top, 0px), 24px); }
+            .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom, 0px), 24px); }
         }
 
-        /* スプラッシュ画面専用の修正 */
-#splash-screen {
-
-    padding-top: env(safe-area-inset-top, 0px);
-}
-
-
+        #splash-screen {
+            padding-top: env(safe-area-inset-top, 0px);
+        }
 
         /* レンジスライダー */
         input[type="range"] { -webkit-appearance: none; background: transparent; cursor: pointer; }
@@ -179,8 +88,8 @@
     <!-- ラッパー -->
     <div class="app-wrapper bg-[#0b1024]">
         
-        <!-- アプリコンテナ本体（これを1つだけにまとめる） -->
-        <div id="app-container" class="relative w-full h-full max-w-[430px] bg-[#1f2b5e] flex flex-col md:rounded-3xl md:border md:border-white/10 shadow-2xl overflow-hidden m-auto">
+        <!-- ▼ 修正箇所: max-h-[950px] と m-auto を削除して隙間を無くしました ▼ -->
+        <div id="app-container" class="relative w-full h-full max-w-[430px] bg-[#1f2b5e] flex flex-col md:rounded-3xl md:border md:border-white/10 shadow-2xl overflow-hidden">
 
             <!-- 画面回転警告 -->
             <div id="orientation-msg" class="hidden fixed inset-0 z-[99999] bg-[#1f2b5e] flex-col items-center justify-center p-6 text-center">
@@ -190,7 +99,6 @@
 
             <!-- スプラッシュスクリーン -->
             <div id="splash-screen" class="absolute inset-0 z-[9999] flex flex-col items-center justify-center bg-[#1f2b5e] cursor-pointer safe-bottom" onclick="startApp()">
-
                 <div class="relative w-36 h-36 mb-10 animate-float-large">
                     <img src="/character.png" class="w-full h-full object-cover rounded-full z-10 border-[3px] border-white/10 shadow-2xl">
                     <div class="absolute inset-0 rounded-full icon-glow"></div>
@@ -201,7 +109,6 @@
 
             <!-- メインの切り替え領域 -->
             <main class="flex-1 w-full relative overflow-hidden bg-[#2b3978]">
-                <!-- ここから下の #view-player 等はそのまま -->
                 <!-- PLAYER VIEW -->
                 <section id="view-player" class="absolute inset-0 flex flex-col w-full h-full z-10 bg-[#2b3978]">
                     <div class="w-full flex-shrink-0 bg-[#1f2b5e] safe-top pb-2 border-b border-white/5 relative z-20 shadow-sm">
@@ -382,7 +289,16 @@
 
     <!-- JavaScript -->
     <script>
-        // === 画面回転監視（JavaScriptはこれだけ残します） ===
+        // ▼ JavaScriptで「ブラウザの正確な高さ」をリアルタイムで取得しCSSに送る ▼
+        const setAppHeight = () => {
+            const doc = document.documentElement;
+            doc.style.setProperty('--app-height', `${window.innerHeight}px`);
+        };
+        window.addEventListener('resize', setAppHeight);
+        window.addEventListener('orientationchange', setAppHeight);
+        setAppHeight(); // 初回実行
+
+        // === 画面回転監視 ===
         function checkOrientation() {
             const msg = document.getElementById('orientation-msg');
             if (window.innerWidth < window.innerHeight && window.matchMedia("(orientation: landscape)").matches) {
@@ -400,7 +316,7 @@
         const CACHE_KEY = 'video_cache_v12';
 
         let player, appStarted = false;
-        let allPlaylist = [], activePlaylist = [], playbackSequence =[], currentSeqIndex = 0;
+        let allPlaylist =[], activePlaylist = [], playbackSequence =[], currentSeqIndex = 0;
         let sortableInst = null, isShuffle = false, repeatMode = 0;
         let editingPlaylist =[];
         let tickInterval = null; 
@@ -598,7 +514,6 @@
             updateActivePlaylist(currentTrackId);
         }
 
-        // タブ切り替え（absolute で重ねているセクションの切り替え）
         function switchTab(tab) {
             ['player', 'links', 'edit'].forEach(id => {
                 const view = document.getElementById('view-' + id);
@@ -683,31 +598,6 @@
             modal.classList.add('opacity-0'); box.classList.remove('scale-100'); box.classList.add('scale-95');
             setTimeout(() => { modal.classList.add('hidden'); modal.classList.remove('flex'); }, 300);
         }
-
-                // デバイス・OSを判定してhtmlタグにクラスを付与する
-        (function() {
-            const ua = navigator.userAgent.toLowerCase();
-            // iPadOS 13以降はMacIntelを返すため、最大タッチポイント数で判定
-            const isIOS = /iphone|ipad|ipod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-            
-            // iPad ChromeのPC版サイト表示などを考慮し、より厳密にiPhoneとiPadを切り分け
-            const isIPhone = isIOS && (ua.includes('iphone') || (window.innerWidth < 768 && !ua.includes('ipad')));
-            const isWindows = /windows/.test(ua);
-
-            const html = document.documentElement;
-            
-            if (isIOS) {
-                if (isIPhone) {
-                    html.classList.add('is-iphone');
-                } else {
-                    html.classList.add('is-ipad');
-                }
-            }
-            
-            if (isWindows) html.classList.add('is-windows');
-        })();
-
-
     </script>
 </body>
 </html>
