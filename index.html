@@ -60,12 +60,6 @@
             padding-top: env(safe-area-inset-top, 0px);
         }
 
-        /* ▼ 修正: iPadブラウザ特有の「不要な時計エリア分の余白」を消去 ▼ */
-        html.ipad-browser .safe-top,
-        html.ipad-browser #splash-screen {
-            padding-top: 0 !important;
-        }
-
         /* レンジスライダー */
         input[type="range"] { -webkit-appearance: none; background: transparent; cursor: pointer; }
         input[type="range"]::-webkit-slider-runnable-track { background: rgba(255,255,255,0.2); border-radius: 4px; height: 4px; }
@@ -321,6 +315,17 @@
                 events: { 'onStateChange': onPlayerStateChange, 'onError': onPlayerError }
             });
         }
+        // iPad判定とメタタグ挿入
+const isIPad = /iPad|Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1;
+const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+
+if (isIPad && isStandalone) {
+    const meta = document.createElement('meta');
+    meta.name = "apple-mobile-web-app-status-bar-style";
+    meta.content = "black-translucent";
+    document.head.appendChild(meta);
+}
+
 
         async function startApp() {
             if (appStarted) return; 
