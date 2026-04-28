@@ -25,14 +25,17 @@
         html {
             background-color: #0b1024;
             height: 100vh;
+            height: -webkit-fill-available;
             height: 100dvh; /* iPad・Chrome等の動的ツールバー用 */
             width: 100vw;
             overflow: hidden;
             overscroll-behavior: none;
+            position: fixed;
         }
 
         body {
             height: 100vh;
+            height: -webkit-fill-available;
             height: 100dvh;
             margin: 0;
             padding: 0;
@@ -43,6 +46,7 @@
 
         .app-wrapper {
             height: 100vh;
+            height: -webkit-fill-available;
             height: 100dvh;
             width: 100%;
             overflow-y: auto;
