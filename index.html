@@ -22,21 +22,21 @@
         ========================================= */
         html, body {
     width: 100%;
+    height: 100%;
     margin: 0;
     padding: 0;
     background-color: #0b1024;
     overflow: hidden;
-
-    /* Safari対策 */
-    height: 100dvh;
+    overscroll-behavior: none;
+    -webkit-tap-highlight-color: transparent;
 }
 
-/* fixedをやめる */
 .app-wrapper {
-    position: relative;
-    width: 100%;
-    min-height: 100dvh;
-
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
     display: flex;
     justify-content: center;
     align-items: stretch;
@@ -52,18 +52,15 @@
            2. セーフエリア対応 (上下の余白)
         ========================================= */
         /* PWAやブラウザの不要な強制余白を削除し、純粋なセーフエリアのみに依存させる */
-       
-        
-        .safe-top {
-    padding-top: env(safe-area-inset-top, 0px);
-}
-
-/* iPadだけ無効化（これが効く） */
-@media (min-width: 768px) {
+        @supports (-webkit-touch-callout: none) {
+  @media (min-width: 768px) {
     .safe-top {
-        padding-top: 0 !important;
+      padding-top: 0 !important;
     }
+  }
 }
+        
+        .safe-top { padding-top: env(safe-area-inset-top, 0px); }
         .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom, 0px), 8px); }
 
         #splash-screen {
@@ -592,24 +589,6 @@
             modal.classList.add('opacity-0'); box.classList.remove('scale-100'); box.classList.add('scale-95');
             setTimeout(() => { modal.classList.add('hidden'); modal.classList.remove('flex'); }, 300);
         }
-    
-/* ===== iOS Safari 初期高さバグ修正 ===== */
-function fixViewportHeight() {
-    document.documentElement.style.setProperty(
-        '--vh',
-        window.innerHeight * 0.01 + 'px'
-    );
-}
-
-/* 初回 */
-window.addEventListener('load', () => {
-    setTimeout(fixViewportHeight, 50);
-});
-
-/* UI変化対応（タブ切り替え・回転など） */
-window.addEventListener('resize', fixViewportHeight);
-window.addEventListener('orientationchange', fixViewportHeight);
-
     </script>
 </body>
 </html>
