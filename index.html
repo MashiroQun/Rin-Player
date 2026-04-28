@@ -19,11 +19,13 @@
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 
     <style>
-                /* ルート・ボディの高さ調整（dvh対応） */
+                       /* =========================================
+           1. ルート・ボディの高さ調整
+        ========================================= */
         html {
             background-color: #0b1024;
             height: 100vh;
-            height: 100dvh; /* 追加: ChromeやSafariの動的ツールバーに対応 */
+            height: 100dvh; /* iPad・Chrome等の動的ツールバー用 */
             width: 100vw;
             overflow: hidden;
             overscroll-behavior: none;
@@ -31,7 +33,7 @@
 
         body {
             height: 100vh;
-            height: 100dvh; /* 追加 */
+            height: 100dvh;
             margin: 0;
             padding: 0;
             overflow: hidden;
@@ -41,7 +43,7 @@
 
         .app-wrapper {
             height: 100vh;
-            height: 100dvh; /* 追加 */
+            height: 100dvh;
             width: 100%;
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
@@ -51,6 +53,16 @@
             justify-content: center;
         }
 
+        /* -----------------------------------------
+           iPhone専用の高さ上書き (分離)
+           - env()が0を返す不整合とChin Gapを回避するため、物理的な100vhに固定
+        ----------------------------------------- */
+        html.is-iphone, 
+        html.is-iphone body, 
+        html.is-iphone .app-wrapper {
+            height: 100vh !important;
+        }
+
         /* スクロールバー非表示 */
         * { scrollbar-width: none; }
         *::-webkit-scrollbar { display: none; }
@@ -58,30 +70,26 @@
         .hide-scrollbar::-webkit-scrollbar { display: none; }
 
         /* =========================================
-           ベース (通常のブラウザ・非PWA時)
+           2. ベース (通常のブラウザ・非PWA時)
         ========================================= */
-        /* 未定義のデバイス用フォールバック */
         .safe-top { padding-top: max(env(safe-area-inset-top, 0px), 16px); }
         .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom, 0px), 16px); }
 
         /* --- iPhone ブラウザ --- */
-        /* アドレスバー等にめり込まないよう最低50pxを確保 */
         .is-iphone .safe-top { padding-top: max(env(safe-area-inset-top, 0px), 50px); }
         .is-iphone .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom, 0px), 24px); }
 
         /* --- iPad ブラウザ --- */
-        /* 重複を解消。タブブラウザのUIを考慮して最低24pxを確保 */
         .is-ipad .safe-top { padding-top: max(env(safe-area-inset-top, 0px), 24px); }
         .is-ipad .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom, 0px), 24px); }
 
-        /* ブラウザで開いた時（PWAではない時）の挙動防止 */
         @media all and (display-mode: browser) {
             html.is-iphone, html.is-iphone body {
                 position: fixed;
                 top: 0;
                 left: 0;
                 width: 100%;
-                height: 100%;
+                height: 100%; /* 親が100vh固定なので100%でOK */
                 overscroll-behavior: none;
             }
             html.is-ipad, html.is-ipad body {
@@ -93,18 +101,25 @@
         }
 
         /* =========================================
-           PWA (Standalone) モードの設定
+           3. PWA (Standalone) モードの設定
         ========================================= */
         @media (display-mode: standalone) {
+            /* 全体のPWA基本余白 */
             .safe-top { padding-top: max(env(safe-area-inset-top, 0px), 16px); }
             .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom, 0px), 16px); }
 
+            /* iPhone PWA: Chin Gap防止のため100vh固定と数値指定 */
+            html.is-iphone, html.is-iphone body, html.is-iphone .app-wrapper {
+                height: 100vh !important;
+            }
             .is-iphone .safe-top { padding-top: max(env(safe-area-inset-top, 0px), 47px); }
             .is-iphone .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom, 0px), 24px);}
             
+            /* iPad PWA */
             .is-ipad .safe-top { padding-top: max(env(safe-area-inset-top, 0px), 24px); } 
             .is-ipad .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom, 0px), 20px);}
             
+            /* Windows */
             .is-windows .safe-top { padding-top: 16px; }
             .is-windows .safe-bottom { padding-bottom: 16px; }
         }
