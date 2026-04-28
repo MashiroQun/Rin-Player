@@ -13,6 +13,8 @@
     
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
@@ -58,12 +60,6 @@
 
 #splash-screen {
     padding-top: env(safe-area-inset-top, 0px);
-}
-
-/* ▼ ここを追加：iPadでPWAの時だけ、強制的に余白をゼロにして隙間を消す ▼ */
-html.ipad-browser .safe-top,
-html.ipad-browser #splash-screen {
-    padding-top: 0 !important;
 }
 
         /* レンジスライダー */
@@ -321,19 +317,7 @@ html.ipad-browser #splash-screen {
                 events: { 'onStateChange': onPlayerStateChange, 'onError': onPlayerError }
             });
         }
-        // iPad判定とメタタグ挿入
-const isIPad = /iPad|Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1;
-const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
 
-if (isIPad && isStandalone) {
-    // htmlタグに ipad-browser クラスを付与（これで上のCSSが効くようになります）
-    document.documentElement.classList.add('ipad-browser');
-
-    const meta = document.createElement('meta');
-    meta.name = "apple-mobile-web-app-status-bar-style";
-    meta.content = "black-translucent";
-    document.head.appendChild(meta);
-}
 
         async function startApp() {
             if (appStarted) return; 
