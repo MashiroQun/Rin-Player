@@ -24,7 +24,7 @@
         html {
             background-color: #0b1024;
             height: 100vh;
-            height: 100dvh; /* iPad・Chrome等の動的ツールバー用 */
+            /*height: 100dvh; /* iPad・Chrome等の動的ツールバー用 */
             width: 100vw;
             overflow: hidden;
             overscroll-behavior: none;
@@ -32,7 +32,7 @@
 
         body {
             height: 100vh;
-            height: 100dvh;
+            /*height: 100dvh;*/
             margin: 0;
             padding: 0;
             overflow: hidden;
@@ -42,7 +42,7 @@
 
         .app-wrapper {
             height: 100vh;
-            height: 100dvh;
+            /*height: 100dvh;*/
             width: 100%;
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
@@ -69,8 +69,8 @@
         .is-iphone .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom, 0px), 5px); }
 
         /* --- iPad ブラウザ --- */
-        .is-ipad .safe-top { padding-top: max(env(safe-area-inset-top, 0px), 24px); }
-        .is-ipad .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom, 0px), 24px); }
+        .is-ipad .safe-top { padding-top: max(env(safe-area-inset-top, 0px), 0px); }
+        .is-ipad .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom, 0px), 0px); }
 
         @media all and (display-mode: browser) {
             html.is-iphone, html.is-iphone body {
