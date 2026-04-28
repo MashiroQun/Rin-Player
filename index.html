@@ -20,11 +20,10 @@
     <style>
                 /* =========================================
            1. ルート・ボディの高さ調整
-        ========================================= */
+        ========================================= 
         html {
             background-color: #0b1024;
             height: 100dvh;
-            /*height: 100dvh; /* iPad・Chrome等の動的ツールバー用 */
             width: 100vw;
             overflow: hidden;
             overscroll-behavior: none;
@@ -32,7 +31,6 @@
 
         body {
             height: 100dvh;
-            /*height: 100dvh;*/
             margin: 0;
             padding: 0;
             overflow: hidden;
@@ -42,7 +40,6 @@
 
         .app-wrapper {
             height: 100dvh;
-            /*height: 100dvh;*/
             width: 100%;
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
@@ -50,6 +47,37 @@
             display: flex;
             align-items: center;
             justify-content: center;
+        }*/
+
+        /* =========================================
+           1. ルート・ボディの高さ調整
+        ========================================= */
+        html, body {
+            position: fixed; /* ← これが最強の固定策です */
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #0b1024;
+            overscroll-behavior: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .app-wrapper {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
         }
 
         /* スクロールバー非表示 */
@@ -124,16 +152,7 @@
 
         /* スプラッシュ画面専用の修正 */
 #splash-screen {
-    /* 親要素のpadding-top(75px)を打ち消して、画面の一番上(物理端)に強制固定する */
-    top: 0 !important;
-    margin-top: 0 !important;
-    
-    /* 高さを「パディングを含まない純粋な画面高」に固定する */
-    height: 100vh !important;
-    height: 100dvh !important; /* 最新のiOS向け */
-    
-    /* スプラッシュ内部のロゴなどがUIに被らないようにしたい場合は、
-       スプラッシュの中身に対してだけpaddingをつける（任意） */
+
     padding-top: env(safe-area-inset-top, 0px);
 }
 
@@ -161,7 +180,7 @@
     <div class="app-wrapper bg-[#0b1024]">
         
         <!-- アプリコンテナ本体（これを1つだけにまとめる） -->
-        <div id="app-container" class="relative w-full h-full max-h-[950px] max-w-[430px] bg-[#1f2b5e] flex flex-col md:rounded-3xl md:border md:border-white/10 shadow-2xl overflow-hidden m-auto">
+        <div id="app-container" class="relative w-full h-full max-w-[430px] bg-[#1f2b5e] flex flex-col md:rounded-3xl md:border md:border-white/10 shadow-2xl overflow-hidden m-auto">
 
             <!-- 画面回転警告 -->
             <div id="orientation-msg" class="hidden fixed inset-0 z-[99999] bg-[#1f2b5e] flex-col items-center justify-center p-6 text-center">
