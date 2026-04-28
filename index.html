@@ -53,11 +53,6 @@
             justify-content: center;
         }
 
-        /* -----------------------------------------
-           iPhone専用の高さ上書き (分離)
-           - env()が0を返す不整合とChin Gapを回避するため、物理的な100vhに固定
-        ----------------------------------------- */
-
         /* スクロールバー非表示 */
         * { scrollbar-width: none; }
         *::-webkit-scrollbar { display: none; }
@@ -103,17 +98,17 @@
             .safe-top { padding-top: max(env(safe-area-inset-top, 0px), 16px); }
             .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom, 0px), 16px); }
 
-            /* iPhone PWA: Chin Gap防止のため100vh固定と数値指定 
+            /*iPhone PWA: Chin Gap防止のため100vh固定と数値指定*/ 
             html.is-iphone, html.is-iphone body, html.is-iphone .app-wrapper {
                 height: 100vh !important;
-            }*/
+            }
 
             html.is-iphone, html.is-iphone body {
                 position: fixed;
                 top: 0;
                 left: 0;
                 width: 100%;
-                height: 100vh !important;
+                height: 100%;
                 overscroll-behavior: none;
             }
             .is-iphone .safe-top { padding-top: max(env(safe-area-inset-top, 0px), 47px); }
