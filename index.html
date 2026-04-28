@@ -105,6 +105,21 @@
     .is-windows .safe-top { padding-top: 16px; }    /* Windowsはノッチがないため固定値 */
     .is-windows .safe-bottom { padding-bottom: 16px; }
 }
+        /* スプラッシュ画面専用の修正 */
+#splash-screen {
+    /* 親要素のpadding-top(75px)を打ち消して、画面の一番上(物理端)に強制固定する */
+    top: 0 !important;
+    margin-top: 0 !important;
+    
+    /* 高さを「パディングを含まない純粋な画面高」に固定する */
+    height: 100vh !important;
+    height: 100dvh !important; /* 最新のiOS向け */
+    
+    /* スプラッシュ内部のロゴなどがUIに被らないようにしたい場合は、
+       スプラッシュの中身に対してだけpaddingをつける（任意） */
+    padding-top: env(safe-area-inset-top, 0px);
+}
+
 
 
         /* レンジスライダー */
