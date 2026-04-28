@@ -20,18 +20,27 @@
 
     <style>
                        /* =========================================
-           1. ルート・ボディの高さ調整
-        ========================================= */
-        html {
-            background-color: #0b1024;
-            height: 100vh;
-            height: -webkit-fill-available;
-            height: 100dvh; /* iPad・Chrome等の動的ツールバー用 */
-            width: 100vw;
-            overflow: hidden;
-            overscroll-behavior: none;
-            position: fixed;
-        }
+           /* =========================================
+   1. ルート・ボディの高さ調整
+========================================= */
+html {
+    background-color: #0b1024;
+    /* 高さは指定しつつ... */
+    height: 100vh;
+    height: -webkit-fill-available;
+    height: 100dvh; 
+    width: 100vw;
+    
+    /* これを追加：四隅を画面の端に強制吸着させる */
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0; 
+    
+    overflow: hidden;
+    overscroll-behavior: none;
+}
 
         body {
             height: 100vh;
