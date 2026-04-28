@@ -58,19 +58,40 @@
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         .hide-scrollbar::-webkit-scrollbar { display: none; }
 
-                /* セーフエリア対応：環境に応じたハイブリッド切り替え */
-        
-        /* 1. 【通常ブラウザ用】Safari、Chrome、PCなどで開いた時 */
-        /* ブラウザ自身のUIがあるため、余計な隙間を作らず最低限（16px）の美しさを保つ */
-        .safe-top { padding-top: max(env(safe-area-inset-top), 16px); }
-        .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom), 16px); }
+               
+        /* ベース (ブラウザ共通) */
+.safe-top { padding-top: max(env(safe-area-inset-top), 16px); }
+.safe-bottom { padding-bottom: max(env(safe-area-inset-bottom), 16px); }
 
-        /* 2. 【アプリ（PWA）用】ホーム画面に追加して全画面で起動した時 */
-        /* 実機で検証された、ノッチやホームバーを回避するベストな余白を強制適用 */
-        @media (display-mode: standalone) {
-            .safe-top { padding-top: max(env(safe-area-inset-top), 47px); }
-            .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom), 24px); }
-        }
+/* --- iPhone ブラウザ --- */
+.is-iphone .safe-top { padding-top: max(env(safe-area-inset-top), 47px); }
+.is-iphone .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom), 16px); }
+
+/* --- iPad ブラウザ --- */
+.is-ipad .safe-top { padding-top: max(env(safe-area-inset-top), 24px); }
+.is-ipad .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom), 24px); }
+
+/* =========================================
+   PWA (Standalone) モードの設定
+========================================= */
+@media (display-mode: standalone) {
+    /* ベース (PWA共通) */
+    .safe-top { padding-top: max(env(safe-area-inset-top), 16px); }
+    .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom), 16px); }
+
+    /* iPhone PWA */
+    .is-iphone .safe-top { padding-top: max(env(safe-area-inset-top), 47px); }
+    .is-iphone .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom), 24px);}
+    
+    /* iPad PWA */
+    .is-ipad .safe-top { padding-top: max(env(safe-area-inset-top), 16px); } /* iPadはステータスバーが細い場合が多いので調整 */
+    .is-ipad .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom), 16px);}
+    
+    /* Windows アプリ化 (PWA) */
+    .is-windows .safe-top { padding-top: 16px; }    /* Windowsはノッチがないため固定値 */
+    .is-windows .safe-bottom { padding-bottom: 16px; }
+}
+
 
         /* レンジスライダー */
         input[type="range"] { -webkit-appearance: none; background: transparent; cursor: pointer; }
@@ -597,6 +618,22 @@
             modal.classList.add('opacity-0'); box.classList.remove('scale-100'); box.classList.add('scale-95');
             setTimeout(() => { modal.classList.add('hidden'); modal.classList.remove('flex'); }, 300);
         }
+
+        // デバイス・OSを判定してhtmlタグにクラスを付与する
+(function() {
+    const ua = navigator.userAgent.toLowerCase();
+    const isIOS = /iphone|ipad|ipod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1); // iPadOS 13以降対応
+    const isIPhone = isIOS && !ua.includes('ipad') && navigator.maxTouchPoints > 1 && window.innerWidth < 768; // 簡易的なiPhone判定
+    const isWindows = /windows/.test(ua);
+
+    const html = document.documentElement;
+    
+    if (isIPhone) html.classList.add('is-iphone');
+    else if (isIOS) html.classList.add('is-ipad'); // iPhone以外のiOSはiPad扱い
+    
+    if (isWindows) html.classList.add('is-windows');
+})();
+
     </script>
 </body>
 </html>
