@@ -19,10 +19,11 @@
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 
     <style>
-                /* 報告書準拠：ルート要素の100vh固定とラッパーへの権限委譲 */
+                /* ルート・ボディの高さ調整（dvh対応） */
         html {
             background-color: #0b1024;
-            height: 100vh; /* dvh遅延バグを回避し、常に物理的な高さを確保 */
+            height: 100vh;
+            height: 100dvh; /* 追加: ChromeやSafariの動的ツールバーに対応 */
             width: 100vw;
             overflow: hidden;
             overscroll-behavior: none;
@@ -30,91 +31,84 @@
 
         body {
             height: 100vh;
+            height: 100dvh; /* 追加 */
             margin: 0;
             padding: 0;
-            overflow: hidden; /* bodyでのスクロールを完全に禁止 */
+            overflow: hidden;
             background-color: transparent;
             -webkit-tap-highlight-color: transparent;
         }
 
-        /* 新設：アプリケーション全体を包含するラッパー */
-         .app-wrapper {
+        .app-wrapper {
             height: 100vh;
+            height: 100dvh; /* 追加 */
             width: 100%;
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
             overscroll-behavior: contain;
-            
-            /* 修正: typoを直し、Flexboxで中央配置 */
             display: flex;
             align-items: center;
             justify-content: center;
         }
 
-            
         /* スクロールバー非表示 */
         * { scrollbar-width: none; }
         *::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         .hide-scrollbar::-webkit-scrollbar { display: none; }
 
-               
-        /* ベース (ブラウザ共通) */
-.safe-top { padding-top: max(env(safe-area-inset-top, 0px), 0px); }
-.safe-bottom { padding-bottom: max(env(safe-area-inset-bottom, 0px), 0px); }
+        /* =========================================
+           ベース (通常のブラウザ・非PWA時)
+        ========================================= */
+        /* 未定義のデバイス用フォールバック */
+        .safe-top { padding-top: max(env(safe-area-inset-top, 0px), 16px); }
+        .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom, 0px), 16px); }
 
-/* --- iPad ブラウザ --- */
-/* 変更：fixedを外すため、75pxではなく最低限の24pxに変更 */
-.is-ipad .safe-top { padding-top: max(env(safe-area-inset-top, 0px), 24px); }
-.is-ipad .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom, 0px), 24px); }
+        /* --- iPhone ブラウザ --- */
+        /* アドレスバー等にめり込まないよう最低50pxを確保 */
+        .is-iphone .safe-top { padding-top: max(env(safe-area-inset-top, 0px), 50px); }
+        .is-iphone .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom, 0px), 24px); }
 
-/* --- iPad ブラウザ --- */
-.is-ipad .safe-top { padding-top: max(env(safe-area-inset-top, 0px), 75px); }
-.is-ipad .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom, 0px), 24px); }
+        /* --- iPad ブラウザ --- */
+        /* 重複を解消。タブブラウザのUIを考慮して最低24pxを確保 */
+        .is-ipad .safe-top { padding-top: max(env(safe-area-inset-top, 0px), 24px); }
+        .is-ipad .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom, 0px), 24px); }
 
-/* ブラウザで開いた時（PWAではない時）の、勝手な上にスライドする挙動を防止 */
-@media all and (display-mode: browser) {
-    /* 変更：ここはiPhone専用にし、成功しているfixedを維持する */
-    html.is-iphone, html.is-iphone body {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        overscroll-behavior: none;
-    }
+        /* ブラウザで開いた時（PWAではない時）の挙動防止 */
+        @media all and (display-mode: browser) {
+            html.is-iphone, html.is-iphone body {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                overscroll-behavior: none;
+            }
+            html.is-ipad, html.is-ipad body {
+                height: 100dvh;
+                margin: 0;
+                padding: 0;
+                overflow: hidden;
+            }
+        }
 
-    /* 追加：iPadはfixedを使わず、dvhでSafariのタブ伸縮に追従させる */
-    html.is-ipad, html.is-ipad body {
-        height: 100dvh;
-        margin: 0;
-        padding: 0;
-        overflow: hidden; /* スクロールによる見切れだけを防ぐ */
-    }
-}
+        /* =========================================
+           PWA (Standalone) モードの設定
+        ========================================= */
+        @media (display-mode: standalone) {
+            .safe-top { padding-top: max(env(safe-area-inset-top, 0px), 16px); }
+            .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom, 0px), 16px); }
 
+            .is-iphone .safe-top { padding-top: max(env(safe-area-inset-top, 0px), 47px); }
+            .is-iphone .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom, 0px), 24px);}
+            
+            .is-ipad .safe-top { padding-top: max(env(safe-area-inset-top, 0px), 24px); } 
+            .is-ipad .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom, 0px), 20px);}
+            
+            .is-windows .safe-top { padding-top: 16px; }
+            .is-windows .safe-bottom { padding-bottom: 16px; }
+        }
 
-
-/* =========================================
-   PWA (Standalone) モードの設定
-========================================= */
-@media (display-mode: standalone) {
-    /* ベース (PWA共通) */
-    .safe-top { padding-top: max(env(safe-area-inset-top, 0px), 16px); }
-    .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom, 0px), 16px); }
-
-    /* iPhone PWA */
-    .is-iphone .safe-top { padding-top: max(env(safe-area-inset-top, 0px), 47px); }
-    .is-iphone .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom, 0px), 24px);}
-    
-    /* iPad PWA */
-    .is-ipad .safe-top { padding-top: max(env(safe-area-inset-top, 0px), 16px); } /* iPadはステータスバーが細い場合が多いので調整 */
-    .is-ipad .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom, 0px), 16px);}
-    
-    /* Windows アプリ化 (PWA) */
-    .is-windows .safe-top { padding-top: 16px; }    /* Windowsはノッチがないため固定値 */
-    .is-windows .safe-bottom { padding-bottom: 16px; }
-}
         /* スプラッシュ画面専用の修正 */
 #splash-screen {
     /* 親要素のpadding-top(75px)を打ち消して、画面の一番上(物理端)に強制固定する */
@@ -658,20 +652,29 @@
             setTimeout(() => { modal.classList.add('hidden'); modal.classList.remove('flex'); }, 300);
         }
 
-        // デバイス・OSを判定してhtmlタグにクラスを付与する
-(function() {
-    const ua = navigator.userAgent.toLowerCase();
-    const isIOS = /iphone|ipad|ipod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1); // iPadOS 13以降対応
-    const isIPhone = isIOS && !ua.includes('ipad') && navigator.maxTouchPoints > 1 && window.innerWidth < 768; // 簡易的なiPhone判定
-    const isWindows = /windows/.test(ua);
+                // デバイス・OSを判定してhtmlタグにクラスを付与する
+        (function() {
+            const ua = navigator.userAgent.toLowerCase();
+            // iPadOS 13以降はMacIntelを返すため、最大タッチポイント数で判定
+            const isIOS = /iphone|ipad|ipod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+            
+            // iPad ChromeのPC版サイト表示などを考慮し、より厳密にiPhoneとiPadを切り分け
+            const isIPhone = isIOS && (ua.includes('iphone') || (window.innerWidth < 768 && !ua.includes('ipad')));
+            const isWindows = /windows/.test(ua);
 
-    const html = document.documentElement;
-    
-    if (isIPhone) html.classList.add('is-iphone');
-    else if (isIOS) html.classList.add('is-ipad'); // iPhone以外のiOSはiPad扱い
-    
-    if (isWindows) html.classList.add('is-windows');
-})();
+            const html = document.documentElement;
+            
+            if (isIOS) {
+                if (isIPhone) {
+                    html.classList.add('is-iphone');
+                } else {
+                    html.classList.add('is-ipad');
+                }
+            }
+            
+            if (isWindows) html.classList.add('is-windows');
+        })();
+
 
     </script>
 </body>
